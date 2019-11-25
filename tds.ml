@@ -84,4 +84,9 @@ let afficher_globale tds =
      |InfoVar (n,t,_,_) -> i:= InfoVar (n,t,d,b)
      | _ -> failwith "Appel modifier_adresse_info pas sur un InfoVar"
     
-   
+let getType info_pointeur =
+  let info = info_ast_to_info info_pointeur in
+  match info with
+  | InfoVar(_, t, _, _) -> t
+  | InfoFun(_, t, _) -> t
+  | InfoConst(_, _) -> Type.Int

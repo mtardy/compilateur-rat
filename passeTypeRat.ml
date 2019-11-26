@@ -11,8 +11,6 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
-  let analyse_fonctions lf =
-    failwith "todo"
 
   let rec analyse_expression e =
     match e with
@@ -24,18 +22,18 @@ struct
     | AstTds.Numerateur(e) ->
       begin
         let (ne, te) = analyse_expression e in
-        if (est_compatible te Int) then
+        if (est_compatible te Rat) then
           (Numerateur(ne), Int)
         else
-          raise (TypeInattendu (te,Int))
+          raise (TypeInattendu (te, Rat))
       end
     | AstTds.Denominateur(e) ->
       begin
         let (ne, te) = analyse_expression e in
-        if (est_compatible te Int) then
+        if (est_compatible te Rat) then
           (Denominateur(ne), Int)
         else
-          raise (TypeInattendu (te, Int))
+          raise (TypeInattendu (te, Rat))
       end
     | AstTds.Rationnel(e1, e2) ->
       begin
@@ -50,13 +48,34 @@ struct
         else 
           raise (ErreurInterne)
       end
-    | AppelFonction(le, info_ast) ->
-      failwith "todo"
-    | _ ->
-      failwith "ok"
+    | AstTds.AppelFonction(info_ast, le) ->
+      begin
+      let type_param = getTypeParam info_ast in
+      let nle = List.map analyse_expression le in
+      let (lnle, ltype) = List.split nle in
+      if (est_compatible_list type_param ltype) then
+        ((AppelFonction(info_ast, lnle), getType info_ast))
+      else
+        raise (TypesParametresInattendus (ltype,type_param))
+      end
+    | AstTds.Binaire(op, e1, e2) ->
+      begin
+        let (ne1, te1) = analyse_expression e1 in
+        let (ne2, te2) = analyse_expression e2 in
+        match te1, op, te2 with
+        | Int, AstSyntax.Plus, Int -> Binaire(PlusInt, ne1, ne2), Int
+        | Rat, AstSyntax.Plus, Rat -> Binaire(PlusRat, ne1, ne2), Rat
+        | Int, AstSyntax.Mult, Int -> Binaire(MultInt, ne1, ne2), Int
+        | Rat, AstSyntax.Mult, Rat -> Binaire(MultRat, ne1, ne2), Rat
+        | Int, AstSyntax.Equ, Int -> Binaire(EquInt, ne1, ne2), Bool
+        | Bool, AstSyntax.Equ, Bool -> Binaire(EquBool, ne1, ne2), Bool
+        | Int, AstSyntax.Inf, Int -> Binaire(Inf, ne1, ne2), Bool
+        | _ ->
+          raise (TypeBinaireInattendu (op, te1, te2))
+      end
 
 
-  let rec analyse_instructions i =
+  let rec analyse_instruction i =
     match i with
     (* On vérifie si le type de la déclaration correspond au type de l'expression *)
     | AstTds.Declaration(t, e, info_ast) ->
@@ -68,7 +87,7 @@ struct
             Declaration(ne, info_ast)
             end
           else
-            raise (TypeInattendu (t, te))
+            raise (TypeInattendu (te, t))
       end
     (* On vérifie si l'affectation est possible, ie. le type retournée par l'expression
     correspond au type de la variable dans laquelle on l'affecte *)
@@ -79,7 +98,7 @@ struct
           if est_compatible te t then
             Affectation(ne, info_ast)
           else
-            raise (TypeInattendu (t, te))
+            raise (TypeInattendu (te, t))
       end
     | AstTds.Affichage(e) ->
       begin
@@ -114,14 +133,31 @@ struct
       Empty
 
 
-
   and analyse_bloc li =
-    let nli = List.map analyse_instructions li in
+    let nli = List.map analyse_instruction li in
     (* afficher_locale tdsBloc; *)
     nli
 
+
+  let analyse_fonction (AstTds.Fonction(typ, infoFun_ast, infoListArgs, li, e)) = (*infolist couple*)
+    (* On recupere la liste d'infos et de types*)
+    let (ltyp, linfo_ast) = List.split infoListArgs in
+    (* On modifie infoFun en consequence *)
+    modifier_type_fonction_info typ ltyp infoFun_ast;
+    List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
+    (* Analyse instructions *)
+    let nli = List.map analyse_instruction li in 
+    (* Analyse du retour *)
+    let (ne,te) = analyse_expression e in
+    (* On vérifie que le type de retour concorde au type de la fonction *)
+      if est_compatible typ te then
+        Fonction(infoFun_ast, linfo_ast, nli, ne)
+      else 
+        raise (TypeInattendu(te,typ))
+    
+
   let analyser (AstTds.Programme(fonctions, bloc)) =
-    let nfonctions = List.map analyse_fonctions fonctions in
+    let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in
     Programme(nfonctions, nbloc)
 

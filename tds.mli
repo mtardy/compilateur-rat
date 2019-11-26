@@ -63,3 +63,6 @@ val modifier_adresse_info : int -> string -> info_ast -> unit
 
 (* Renvoie le type d'une info_ast *)
 val getType : info_ast -> typ
+
+(* Renvoie le type des paramètres d'une fonction *)
+val getTypeParam : info_ast -> typ list

@@ -90,3 +90,11 @@ let getType info_pointeur =
   | InfoVar(_, t, _, _) -> t
   | InfoFun(_, t, _) -> t
   | InfoConst(_, _) -> Type.Int
+
+let getTypeParam info_pointeur =
+  let info = info_ast_to_info info_pointeur in
+  match info with
+  | InfoFun(_, _, lt) ->
+    lt
+  | _ ->
+    failwith "Appel incorrect: GetTypeParam uniquement sur InfoFun"

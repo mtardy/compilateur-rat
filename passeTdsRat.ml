@@ -224,7 +224,7 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,nom,lp,li,e))  =
   (* Ils peuvent être utilisés dans les instructions et l'expression de retour *)
   let infoListArgs = List.map (fun x -> analyse_args_function tdsFonction x) lp in
   (* Créer l'infoFun de la fonction à partir de son nom, son type et le type de ses paramètres *)
-  let infoFun = InfoFun(nom, Undefined, fst (List.split infoListArgs)) in
+  let infoFun = InfoFun(nom, Undefined, []) in
   let infoFun_ast = info_to_info_ast infoFun in
   (* Ajouter l'identifiant de la fonction à la tds avant l'analyse des instructions permet les appels récursifs *)
   ajouter_identifiant_fonction maintds nom infoFun_ast;

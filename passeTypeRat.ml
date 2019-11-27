@@ -11,7 +11,11 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
-
+  (* analyse_expression : Rat.Ast.AstTds.expression -> Rat.Ast.AstType.expression * Rat.Type.typ *)
+  (* Paramètre e : l'expression à analyser *)
+  (* Vérifie que le typage est correct dans l'expression et renvoie un couple
+  composé d'une AstType.expression et d'un type *)
+  (* Erreur si l'utilisation des types est incorrect *)
   let rec analyse_expression e =
     match e with
     | AstTds.True -> (True, Bool)
@@ -19,6 +23,7 @@ struct
     | AstTds.Entier(a) -> (Entier(a), Int)
     | AstTds.Ident info_ast ->
       (Ident(info_ast), getType info_ast)
+    (* Vérifie que le type est bien un rationnel *)
     | AstTds.Numerateur(e) ->
       begin
         let (ne, te) = analyse_expression e in
@@ -27,6 +32,7 @@ struct
         else
           raise (TypeInattendu (te, Rat))
       end
+    (* Vérifie que le type est bien un rationnel *)
     | AstTds.Denominateur(e) ->
       begin
         let (ne, te) = analyse_expression e in
@@ -35,19 +41,23 @@ struct
         else
           raise (TypeInattendu (te, Rat))
       end
+    (* Vérifie que le type est bien construit à partir de deux entiers *)
     | AstTds.Rationnel(e1, e2) ->
       begin
         let (ne1, te1) = analyse_expression e1 in
         let (ne2, te2) = analyse_expression e2 in
         if (est_compatible te1 Int && est_compatible te2 Int) then
           (Rationnel(ne1, ne2), Rat)
+        (* Permet de cibler l'exception sur le bon argument *)
         else if not (est_compatible te1 Int) then
           raise (TypeInattendu (te1, Int))
         else if not (est_compatible te2 Int) then
           raise (TypeInattendu (te2, Int))
-        else 
+        else
+        (* Code mort si tout va bien *)
           raise (ErreurInterne)
       end
+    (* Vérifie que l'appel de la fonction se fait avec des paramètres de types corrects *)
     | AstTds.AppelFonction(info_ast, le) ->
       begin
       let type_param = getTypeParam info_ast in
@@ -58,6 +68,7 @@ struct
       else
         raise (TypesParametresInattendus (ltype,type_param))
       end
+    (* Vérifie que l'opération binaire est possible *)
     | AstTds.Binaire(op, e1, e2) ->
       begin
         let (ne1, te1) = analyse_expression e1 in
@@ -100,6 +111,7 @@ struct
           else
             raise (TypeInattendu (te, t))
       end
+    (* On retourne des affichages plus spécifiques à chaque types *)
     | AstTds.Affichage(e) ->
       begin
         let (ne, te) = analyse_expression e in
@@ -110,6 +122,7 @@ struct
           | Undefined ->
             raise (ErreurInterne)
       end
+    (* On analyse les deux blocs de la condition et l'expression *)
     | AstTds.Conditionnelle(e, bt, be) ->
       let (ne, te) = analyse_expression e in
       begin
@@ -120,6 +133,7 @@ struct
         else
           raise (TypeInattendu (te, Bool))
       end
+    (* On analyse le bloc et l'expression *)
     | AstTds.TantQue(e, b) ->
       let (ne, te) = analyse_expression e in
       begin
@@ -134,27 +148,27 @@ struct
 
 
   and analyse_bloc li =
+    (* L'analyse d'un bloc consite à l'analyse de chacune de ses instructions *)
     let nli = List.map analyse_instruction li in
-    (* afficher_locale tdsBloc; *)
     nli
 
 
   let analyse_fonction (AstTds.Fonction(typ, infoFun_ast, infoListArgs, li, e)) = (*infolist couple*)
-    (* On recupere la liste d'infos et de types*)
+    (* On récupere la liste d'infos et de types *)
     let (ltyp, linfo_ast) = List.split infoListArgs in
-    (* On modifie infoFun en consequence *)
+    (* On modifie infoFun en conséquence *)
     modifier_type_fonction_info typ ltyp infoFun_ast;
     List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
     (* Analyse instructions *)
-    let nli = List.map analyse_instruction li in 
+    let nli = List.map analyse_instruction li in
     (* Analyse du retour *)
     let (ne,te) = analyse_expression e in
     (* On vérifie que le type de retour concorde au type de la fonction *)
       if est_compatible typ te then
         Fonction(infoFun_ast, linfo_ast, nli, ne)
-      else 
+      else
         raise (TypeInattendu(te,typ))
-    
+
 
   let analyser (AstTds.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in

@@ -1,4 +1,4 @@
-(* Module de la passe de typage *)
+(* Module de la passe de placement mémoire *)
 module PassePlacementRat : Passe.Passe with type t1 = Ast.AstType.programme and type t2 = Ast.AstPlacement.programme =
 struct
 

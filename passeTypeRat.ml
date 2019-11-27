@@ -85,7 +85,10 @@ struct
           raise (TypeBinaireInattendu (op, te1, te2))
       end
 
-
+  (* analyser_instruction : AstTds.instruction -> AstType.instruction *)
+  (* Paramètre : l'instruction à analyser *)
+  (* Analyse le typage d'une instruction *)
+  (* Erreur si mauvaise utilisation des types *)
   let rec analyse_instruction i =
     match i with
     (* On vérifie si le type de la déclaration correspond au type de l'expression *)
@@ -146,13 +149,21 @@ struct
     | AstTds.Empty ->
       Empty
 
-
+  (* analyser_bloc : AstTds.bloc -> AstType.bloc *)
+  (* Paramètre : le bloc d'instruction à analyser *)
+  (* Analyse le typage des instructions d'un bloc *)
+  (* Erreur si mauvaise utilisation des types *)
   and analyse_bloc li =
     (* L'analyse d'un bloc consite à l'analyse de chacune de ses instructions *)
     let nli = List.map analyse_instruction li in
     nli
 
-
+  (* analyser_fonction : AstTds.fonction -> AstType.fonction *)
+  (* Paramètre : la fonction à analyser *)
+  (* Ajoute dans l'info le type de la fonction et de ses paramètres,
+  analyse ensuite le bon typage des instructions au sein de la fonction
+  puis vérifie que le typage de l'expression retournée est cohérent *)
+  (* Erreur si mauvaise utilisation des types *)
   let analyse_fonction (AstTds.Fonction(typ, infoFun_ast, infoListArgs, li, e)) = (*infolist couple*)
     (* On récupere la liste d'infos et de types *)
     let (ltyp, linfo_ast) = List.split infoListArgs in
@@ -169,7 +180,10 @@ struct
       else
         raise (TypeInattendu(te,typ))
 
-
+  (* analyser : AstTds.ast -> AstType.ast *)
+  (* Paramètre : le programme à analyser *)
+  (* Vérifie que le typage est correct dans le programme *)
+  (* Erreur si mauvaise utilisation des types *)
   let analyser (AstTds.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in

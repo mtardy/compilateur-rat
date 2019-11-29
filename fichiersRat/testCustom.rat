@@ -1,0 +1,12 @@
+test{
+    int a = 1;
+    int b = 2;
+    if (a=1) {
+        a = 2;
+    } else {
+        a = 3;
+    }
+    while (b < 6) {
+        b = (b + 1);
+    }
+}

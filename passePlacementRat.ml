@@ -58,7 +58,7 @@ struct
   fonction en fonction de leur taille mémoire *)
   let rec analyse_param revlp dep =
     match revlp with
-    | [] -> []
+    | [] -> ()
     | info_ast::q ->
       let t = getTaille (getType info_ast) in
       (* On ajoute paramètres "en négatif" par rapport à LB *)
@@ -70,9 +70,8 @@ struct
   (* Effectue le placement mémoire pour les paramètres passés dans la
   fonction et pour le bloc d'instruction de la fonction *)
   let analyse_fonction (AstType.Fonction(info_ast, lp, li, e)) =
-    (* L'analyse de paramètres n'effectue que des effets de bords, cette écriture
-    permet seulement d'éviter un warning car analyse_param ne renvoie pas un unit *)
-    let _ = analyse_param (List.rev lp) 0 in
+    (* L'analyse de paramètres n'effectue que des effets de bords *)
+    analyse_param (List.rev lp) 0;
     (* Analyse du bloc en partant de 3 "LB" car nous sommes dans une fonction *)
     let nli = analyse_bloc 3 "LB" li in
     Fonction(info_ast, lp, nli, e)

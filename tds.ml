@@ -98,3 +98,21 @@ let getTypeParam info_pointeur =
     lt
   | _ ->
     failwith "Appel incorrect: GetTypeParam uniquement sur InfoFun"
+
+let getAddr info_pointeur =
+  let info = info_ast_to_info info_pointeur in
+  match info with
+  | InfoVar(_, _, addr, _) -> addr
+  |_ -> failwith "Internal erreur"
+
+let getReg info_pointeur =
+  let info = info_ast_to_info info_pointeur in
+  match info with
+  | InfoVar(_, _, _, reg) -> reg
+  |_ -> failwith "Internal erreur"
+
+let getFunNom info_pointeur =
+  let info = info_ast_to_info info_pointeur in
+  match info with
+  | InfoFun(nom, _, _) -> nom
+  |_ -> failwith "Internal erreur"

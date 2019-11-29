@@ -58,6 +58,8 @@ let rec analyse_tds_expression tds e =
             let info = info_ast_to_info infoId in
             begin
               match (info) with
+              (* On supprime les InfoConst et on retourne un entier *)
+              | InfoConst (_, value) -> Entier(value)
               (* Un identifiant dans une expression ne peut pas être l'identifiant d'une fonction *)
               | InfoFun(_, _, _) -> raise (MauvaiseUtilisationIdentifiant id)
               | _ -> Ident(infoId)

@@ -89,7 +89,8 @@ let getType info_pointeur =
   match info with
   | InfoVar(_, t, _, _) -> t
   | InfoFun(_, t, _) -> t
-  | InfoConst(_, _) -> Type.Int
+  (* Code mort en théorie car les InfoConst ont été supprimé à la phase de Tds*)
+  | InfoConst(_, _) -> Type.Int 
 
 let getTypeParam info_pointeur =
   let info = info_ast_to_info info_pointeur in
@@ -103,16 +104,16 @@ let getAddr info_pointeur =
   let info = info_ast_to_info info_pointeur in
   match info with
   | InfoVar(_, _, addr, _) -> addr
-  |_ -> failwith "Internal erreur"
+  |_ -> failwith "Internal erreur: getAddr"
 
 let getReg info_pointeur =
   let info = info_ast_to_info info_pointeur in
   match info with
   | InfoVar(_, _, _, reg) -> reg
-  |_ -> failwith "Internal erreur"
+  |_ -> failwith "Internal erreur: getReg"
 
 let getFunNom info_pointeur =
   let info = info_ast_to_info info_pointeur in
   match info with
   | InfoFun(nom, _, _) -> nom
-  |_ -> failwith "Internal erreur"
+  |_ -> failwith "Internal erreur: getFunNom"

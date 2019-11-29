@@ -108,13 +108,19 @@ let rec analyse_expression e =
       ""
     )
 
-  let analyse_param info_ast =
-    (* List.fold_right getTypeParam info_ast *)
-    "TODO"
+  let rec analyse_param dep ltp =
+    match ltp with
+    | [] -> ""
+    | tp::q ->
+      let taille = getTaille tp in
+      (analyse_param (dep-taille) q)^"LOAD ("^(string_of_int taille)^") "^(string_of_int dep)^"[LB]\n"
 
   let analyse_fonction (Ast.AstPlacement.Fonction(info_ast, linfo_ast, li, e)) =
-    getFunNom info_ast
-    ^(analyse_param info_ast)
+    getFunNom info_ast^"\n"
+    (*
+    ^(let ltp = getTypeParam info_ast in
+      analyse_param (-1) ltp)
+      *)
     ^(analyse_bloc li)
     ^(analyse_expression e)
 
@@ -122,9 +128,12 @@ let rec analyse_expression e =
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in
-    let code = (List.fold_right (fun elem myString -> elem^myString) nfonctions "")^ (* Code.getEntete () ^  *)
-    nbloc^
-    "HALT\n" in
+    let code =
+    "JUMP Main\n"
+    ^(List.fold_right (fun elem myString -> elem^myString) nfonctions "") (* Code.getEntete () ^  *)
+    ^"Main\n"
+    ^nbloc
+    ^"HALT\n" in
     Code.ecrireFichier "FichierOutput.tam" code;
     code
 end

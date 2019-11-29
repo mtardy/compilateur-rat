@@ -94,7 +94,15 @@ let rec analyse_expression e =
       ^(analyse_bloc b)
       ^"JUMP "^debutTQ^"\n"
       ^finTQ^"\n"
-    |_ -> ""
+    | AffichageInt(e) ->
+      (analyse_expression e)
+      ^"SUBR IOut\n"
+    | AffichageBool(e) ->
+      (analyse_expression e)
+      ^"SUBR BOut\n"
+    | AffichageRat(e) ->
+      (analyse_expression e)
+      ^"CALL (SB) ROut\n"
 
   and analyse_bloc li =
     let tailleToPop = (taille_li li) in
@@ -108,29 +116,20 @@ let rec analyse_expression e =
       ""
     )
 
-  let rec analyse_param dep ltp =
-    match ltp with
-    | [] -> ""
-    | tp::q ->
-      let taille = getTaille tp in
-      (analyse_param (dep-taille) q)^"LOAD ("^(string_of_int taille)^") "^(string_of_int dep)^"[LB]\n"
-
   let analyse_fonction (Ast.AstPlacement.Fonction(info_ast, linfo_ast, li, e)) =
     getFunNom info_ast^"\n"
-    (*
-    ^(let ltp = getTypeParam info_ast in
-      analyse_param (-1) ltp)
-      *)
     ^(analyse_bloc li)
     ^(analyse_expression e)
-
+    ^(let tailleRetour = getTaille (getType info_ast) in
+      "RETURN (1) "^(string_of_int tailleRetour)^"\n")
 
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in
     let code =
     "JUMP Main\n"
-    ^(List.fold_right (fun elem myString -> elem^myString) nfonctions "") (* Code.getEntete () ^  *)
+    ^(Code.getEntete ())
+    ^(List.fold_right (fun elem myString -> elem^myString) nfonctions "")
     ^"Main\n"
     ^nbloc
     ^"HALT\n" in

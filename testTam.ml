@@ -1,7 +1,7 @@
 open Compilateur
 
 (* Changer le chemin d'accès du jar. *)
-let runtamcmde = "java -jar ../../../../../tools/runtam/runtam.jar"
+let runtamcmde = "java -jar ../../../runtam/runtam.jar"
 (* let runtamcmde = "java -jar /mnt/n7fs/.../tools/runtam/runtam.jar" *)
 
 (* read up to maxlen characters from the input channel. *)

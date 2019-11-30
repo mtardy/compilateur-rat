@@ -53,7 +53,7 @@ let rec analyse_expression e =
     )
   | AppelFonction(info_ast, le) ->
     List.fold_right (fun e q -> (analyse_expression e)^q) le ""
-    ^"CALL (SB)"^(getFunNom info_ast)^"\n"
+    ^"CALL (SB) "^(getFunNom info_ast)^"\n"
 
   let taille_i i = match i with
     |Declaration(e,info) -> getTaille (getType info)
@@ -127,10 +127,9 @@ let rec analyse_expression e =
     let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in
     let code =
-    "JUMP Main\n"
-    ^(Code.getEntete ())
+    (Code.getEntete ())
     ^(List.fold_right (fun elem myString -> elem^myString) nfonctions "")
-    ^"Main\n"
+    ^"\nmain\n"
     ^nbloc
     ^"HALT\n" in
     Code.ecrireFichier "FichierOutput.tam" code;

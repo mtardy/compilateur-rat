@@ -28,7 +28,7 @@ let runtamcode cmde ratfile =
   let ic = Unix.open_process_in (cmde ^ " " ^ tamfile) in
   let printed = load_chan ic in
   close_in ic;
-  Sys.remove tamfile;    (* à commenter si on veut étudier le code TAM. *)
+  Sys.remove tamfile;   (* à commenter si on veut étudier le code TAM. *)
   remove_blanks printed
 
 (* Compile and run ratfile, and compare its output to the expected output *)

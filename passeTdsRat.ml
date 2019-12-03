@@ -18,6 +18,11 @@ en une expression de type AstTds.expression *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_expression tds e =
   match e with
+  | AstSyntax.SousChaine(e, e1, e2) ->
+    let ne = analyse_tds_expression tds e in
+    let ne1 = analyse_tds_expression tds e1 in
+    let ne2 = analyse_tds_expression tds e2 in
+    SousChaine(ne,ne1,ne2)
   | AstSyntax.AppelFonction (nom, lexpr)->
     begin
       (* Chercher si la fonction a été préalablement définie *)
@@ -48,6 +53,9 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.Denominateur (expr) ->
       let exprTds = analyse_tds_expression tds expr in
       Denominateur (exprTds)
+  | AstSyntax.Taille(expr) ->
+      let exprTds = analyse_tds_expression tds expr in
+      Taille (exprTds)
   | AstSyntax.Ident (id) ->
     begin
       (* Chercher si l'identifiant a déjà été défini *)
@@ -69,6 +77,7 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.False -> False
   | AstSyntax.Entier (entier) ->
       Entier (entier)
+  | AstSyntax.Chaine (chaine) -> Chaine (chaine)
   | AstSyntax.Binaire (op, expr1, expr2) ->
       (* Analyser les sous expressions *)
       let expr1Tds = analyse_tds_expression tds expr1 in

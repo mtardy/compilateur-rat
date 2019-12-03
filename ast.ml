@@ -68,6 +68,8 @@ type expression =
   | False
   (* Entier *)
   | Entier of int
+  (* String *)
+  | Chaine of string
   (* Opération binaire représentée par l'opérateur, l'opérande gauche et l'opérande droite *)
   | Binaire of binaire * expression * expression
 
@@ -127,6 +129,7 @@ struct
     | True -> "true "
     | False -> "false "
     | Entier i -> (string_of_int i)^" "
+    | Chaine s -> s^" "
     | Binaire (b,e1,e2) -> (string_of_expression e1)^(string_of_binaire b)^(string_of_expression e2)^" "
 
   (* Conversion des instructions *)
@@ -170,14 +173,17 @@ struct
   (* ~ expression de l'AST syntaxique où les noms des identifiants ont été 
   remplacés par les informations associées aux identificateurs *)
   type expression =
+    | SousChaine of expression * expression * expression
     | AppelFonction of Tds.info_ast * expression list
     | Rationnel of expression * expression
     | Numerateur of expression
     | Denominateur of expression
+    | Taille of expression
     | Ident of Tds.info_ast (* le nom de l'identifiant est remplacé par ses informations *)
     | True
     | False
     | Entier of int
+    | Chaine of string
     | Binaire of AstSyntax.binaire * expression * expression
 
   (* instructions existantes dans notre langage *)

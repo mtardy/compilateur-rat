@@ -101,6 +101,7 @@ e :
 | TRUE                    {True}
 | FALSE                   {False}
 | e=ENTIER                {Entier e}
+| e=CHAINE                {Chaine e}
 | PO e1=e CONCAT e2=e PF  {Binaire (Concat,e1,e2)}
 | PO e1=e PLUS e2=e PF    {Binaire (Plus,e1,e2)}
 | PO e1=e MULT e2=e PF    {Binaire (Mult,e1,e2)}

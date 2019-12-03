@@ -1,0 +1,7 @@
+test{
+  string mystringos = "pizza";
+  mystringos = "peperonni";
+
+  string myconcat = (mystringos ^ "pizza");
+  print (myconcat{0,3});
+}

@@ -44,10 +44,12 @@ module AstSyntax =
 struct
 
 (* Opérateurs binaires de Rat *)
-type binaire = Plus | Mult | Equ | Inf
+type binaire = Plus | Mult | Equ | Inf | Concat
 
 (* Expressions de Rat *)
 type expression =
+  (* Acces à une sous chaine *)
+  | SousChaine of expression * expression * expression
   (* Appel de fonction représenté par le nom de la fonction et la liste des paramètres réels *)
   | AppelFonction of string * expression list 
   (* Rationnel représenté par le numérateur et le dénominateur *)
@@ -56,6 +58,8 @@ type expression =
   | Numerateur of expression
   (* Accès au dénominateur d'un rationnel *)
   | Denominateur of expression
+  (* Taille d'une String *)
+  | Taille of expression
   (* Accès à un identifiant représenté par son nom *)
   | Ident of string
   (* Booléen vrai *)
@@ -108,14 +112,17 @@ struct
     | Mult -> "* "
     | Equ -> "= "
     | Inf -> "< "
+    | Concat -> "^ "
 
   (* Conversion des expressions *)
   let rec string_of_expression e =
     match e with
+    | SousChaine(e,e1,e2) -> "("^(string_of_expression e)^"{"^(string_of_expression e1)^","^(string_of_expression e2)^")"
     | AppelFonction (n,le) -> "call "^n^"("^((List.fold_right (fun i tq -> (string_of_expression i)^tq) le ""))^") "
     | Rationnel (e1,e2) -> "["^(string_of_expression e1)^"/"^(string_of_expression e2)^"] "
     | Numerateur e1 -> "num "^(string_of_expression e1)^" "
     | Denominateur e1 ->  "denom "^(string_of_expression e1)^" "
+    | Taille e -> "length "^(string_of_expression e)
     | Ident n -> n^" "
     | True -> "true "
     | False -> "false "

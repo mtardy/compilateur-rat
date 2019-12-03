@@ -1,10 +1,11 @@
-type typ = Bool | Int | Rat | Undefined
+type typ = Bool | Int | Rat | Str | Undefined
 
 let string_of_type t = 
   match t with
   | Bool ->  "Bool"
   | Int  ->  "Int"
   | Rat  ->  "Rat"
+  | Str   -> "String"
   | Undefined -> "Undefined"
 
 
@@ -26,4 +27,5 @@ let getTaille t =
   | Bool -> 1
   | Rat -> 2
   | Undefined -> 0
+  | _ -> failwith "getTaille String appelé"
   

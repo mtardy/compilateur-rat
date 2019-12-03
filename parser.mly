@@ -9,6 +9,7 @@ open Ast.AstSyntax
 
 %token <int> ENTIER
 %token <string> ID
+%token <string> CHAINE
 %token RETURN
 %token PV
 %token AO
@@ -24,6 +25,7 @@ open Ast.AstSyntax
 %token BOOL
 %token INT
 %token RAT
+%token STRING
 %token CALL 
 %token CO
 %token CF
@@ -35,6 +37,9 @@ open Ast.AstSyntax
 %token PLUS
 %token MULT
 %token INF
+%token CONCAT
+%token LENGTH
+%token V
 %token EOF
 
 (* Type de l'attribut synthétisé des non-terminaux *)
@@ -83,16 +88,20 @@ typ :
 | BOOL    {Bool}
 | INT     {Int}
 | RAT     {Rat}
+| STRING  {Str}
 
 e : 
+| PO n=e AO e1=e V e2=e AF PF {SousChaine(n,e1,e2)}
 | CALL n=ID PO lp=cp PF   {AppelFonction (n,lp)}
 | CO e1=e SLASH e2=e CF   {Rationnel(e1,e2)}
 | NUM e1=e                {Numerateur e1}
 | DENOM e1=e              {Denominateur e1}
+| LENGTH n=e              {Taille n}
 | n=ID                    {Ident n}
 | TRUE                    {True}
 | FALSE                   {False}
 | e=ENTIER                {Entier e}
+| PO e1=e CONCAT e2=e PF  {Binaire (Concat,e1,e2)}
 | PO e1=e PLUS e2=e PF    {Binaire (Plus,e1,e2)}
 | PO e1=e MULT e2=e PF    {Binaire (Mult,e1,e2)}
 | PO e1=e EQUAL e2=e PF   {Binaire (Equ,e1,e2)}

@@ -1,3 +1,5 @@
 test{
-  print "SALUT";
+  string mypizza = "gabagool";
+  string mydog = " mozzadel";
+  print (mypizza ^ mydog); 
 }

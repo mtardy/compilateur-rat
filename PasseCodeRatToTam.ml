@@ -22,7 +22,7 @@ let explode s =
 (* On load chaque caracteres -> A remplacer par un fold *)
 let rec load_chaine l = match l with
     |[] -> ""
-    |h::t -> "LOADL "^h^"\n"^(load_chaine t)
+    |h::t -> "LOADL '"^h^"'\n"^(load_chaine t)
 
 (* analyse_expression : AstPlacement.expression -> string *)
 (* Paramètre e : l'expression dont on veut générer le code *)
@@ -34,15 +34,20 @@ let rec analyse_expression e =
   | Entier(i) -> "LOADL "^(string_of_int i)^"\n"
   | Chaine(c) -> 
       let l = (explode c) in
+      (* Argument du MAlloc (taille du bloc) : len(chaine) + 1 (pour la taille) *)
+      "LOADL "^(string_of_int ((List.length l)+1))^"\n"
+      (* MAlloc réserve la place *)
+      (* L'adresse est placé dans la pile *)
+      ^"SUBR MAlloc\n"^
       (* On place la liste de caractere et la taille dans la pile*)
       "LOADL "^(string_of_int (List.length l))^"\n"^
-      (* A voir pour l'ordre des loads *)
-      load_chaine (List.rev l)^
-      (* On place la chaine dans le tas -> Pour respecter structures des fonctions *)
-      (* Argument du MAlloc (taille du bloc) : len(chaine) + 1 (pour la taille) *)
-      "LOADL "^(string_of_int ((List.length l)+1))^"\n"^
-      (* L'adresse est placé dans la pile *)
-      "SUBR MAlloc\n"
+      (* On charge chaque caractère dans la pile *)
+      load_chaine l
+      (* On récupère l'adresse renvoyée par MAlloc et on la place en haut de la pile *)
+      ^"LOAD (1) -"^(string_of_int ((List.length l)+2))^"[ST]"
+      (* On place la chaine dans le tas *)
+      ^"STOREI ("^(string_of_int ((List.length l)+1))^")\n"
+      (* La haut de la pile est égal à l'adresse de la string *)
   (* On récupère la taille du type lié à l'identifiant et son adresse *)
   | Ident(info_ast) ->
     "LOAD ("^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n"
@@ -72,11 +77,14 @@ let rec analyse_expression e =
         | EquInt -> "SUBR IEq\n"
         | EquBool -> "SUBR BAnd\n"
         | Inf -> "SUBR ILss\n"
+        | Concat -> "CALL (SB) SCat\n"
       end
     )
   | AppelFonction(info_ast, le) ->
     List.fold_right (fun e q -> (analyse_expression e)^q) le ""
     ^"CALL (SB) "^(getFunNom info_ast)^"\n"
+  | _ ->
+    failwith "todo"
 
   let taille_i i = match i with
     |Declaration(e,info) -> getTaille (getType info)

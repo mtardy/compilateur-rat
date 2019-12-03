@@ -101,6 +101,7 @@ struct
         | Int, AstSyntax.Equ, Int -> Binaire(EquInt, ne1, ne2), Bool
         | Bool, AstSyntax.Equ, Bool -> Binaire(EquBool, ne1, ne2), Bool
         | Int, AstSyntax.Inf, Int -> Binaire(Inf, ne1, ne2), Bool
+        | Str, AstSyntax.Concat, Str -> Binaire(Concat, ne1, ne2), Str
         | _ ->
           raise (TypeBinaireInattendu (op, te1, te2))
       end

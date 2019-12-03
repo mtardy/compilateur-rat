@@ -72,3 +72,6 @@ val getAddr : info_ast -> int
 val getReg : info_ast -> string
 
 val getFunNom : info_ast -> string
+
+(* Renvoie la taille totale des paramètres d'une fonction *)
+val getTailleParam : info_ast -> int

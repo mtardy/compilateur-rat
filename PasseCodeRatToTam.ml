@@ -121,7 +121,7 @@ let rec analyse_expression e =
     ^(analyse_bloc li)
     ^(analyse_expression e)
     ^(let tailleRetour = getTaille (getType info_ast) in
-      "RETURN (1) "^(string_of_int tailleRetour)^"\n")
+      "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n")
 
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in

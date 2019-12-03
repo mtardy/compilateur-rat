@@ -73,13 +73,10 @@ POP (2) 4
 RETURN (2) 4
 
 f
-LOAD (1) -1[LB]
-RETURN (1) 1
+LOADL 1
+RETURN (1) 0
 
 main
-LOADL 3
-LOADL 4
-SUBR IAdd
 CALL (SB) f
 SUBR IOut
 HALT

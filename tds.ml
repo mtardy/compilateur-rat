@@ -117,3 +117,10 @@ let getFunNom info_pointeur =
   match info with
   | InfoFun(nom, _, _) -> nom
   |_ -> failwith "Internal erreur: getFunNom"
+
+let getTailleParam info_ast =
+  let info = info_ast_to_info info_ast in
+  match info with
+  | InfoFun(_, _, listTypeParam) ->
+    List.fold_left (fun tailleActuel element -> tailleActuel + (getTaille element)) 0 listTypeParam
+  | _ -> failwith "Internal error: getTypeParam only with InfoFun"

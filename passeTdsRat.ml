@@ -191,7 +191,7 @@ and analyse_tds_bloc tds li =
   (* Analyse des instructions du bloc avec la tds du nouveau bloc
   Cette tds est modifiée par effet de bord *)
   let nli = List.map (analyse_tds_instruction tdsBloc) li in
-  afficher_locale tdsBloc;
+  (*afficher_locale tdsBloc;*)
   nli
 
 (* analyse_args_function : Rat.Tds.tds -> 'a * string -> 'a * Rat.Tds.info_ast *)

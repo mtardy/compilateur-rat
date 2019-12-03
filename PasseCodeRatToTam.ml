@@ -12,6 +12,18 @@ struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
 
+(* On transfomre une string en liste *)
+let explode s =
+  let rec exp i l =
+    if i < 0 then l 
+    else exp (i - 1) ((Char.escaped s.[i]) :: l) in
+  exp (String.length s - 1) [];;
+
+(* On load chaque caracteres -> A remplacer par un fold *)
+let rec load_chaine l = match l with
+    |[] -> ""
+    |h::t -> "LOADL "^h^"\n"^(load_chaine t)
+
 (* analyse_expression : AstPlacement.expression -> string *)
 (* Paramètre e : l'expression dont on veut générer le code *)
 (* Analyse l'expression et génère le code TAM correspondant *)
@@ -20,6 +32,17 @@ let rec analyse_expression e =
   | True -> "LOADL 1\n"
   | False -> "LOADL 0\n"
   | Entier(i) -> "LOADL "^(string_of_int i)^"\n"
+  | Chaine(c) -> 
+      let l = (explode c) in
+      (* On place la liste de caractere et la taille dans la pile*)
+      "LOADL "^(string_of_int (List.length l))^"\n"^
+      (* A voir pour l'ordre des loads *)
+      load_chaine (List.rev l)^
+      (* On place la chaine dans le tas -> Pour respecter structures des fonctions *)
+      (* Argument du MAlloc (taille du bloc) : len(chaine) + 1 (pour la taille) *)
+      "LOADL "^(string_of_int ((List.length l)+1))^"\n"^
+      (* L'adresse est placé dans la pile *)
+      "SUBR MAlloc\n"
   (* On récupère la taille du type lié à l'identifiant et son adresse *)
   | Ident(info_ast) ->
     "LOAD ("^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n"
@@ -103,6 +126,9 @@ let rec analyse_expression e =
     | AffichageRat(e) ->
       (analyse_expression e)
       ^"CALL (SB) ROut\n"
+    | AffichageStr(e) ->
+      (analyse_expression e)
+      ^"CALL (SB) SOut\n"
 
   and analyse_bloc li =
     let tailleToPop = (taille_li li) in

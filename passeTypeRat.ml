@@ -27,7 +27,7 @@ struct
         if (est_compatible te Str) then
           (SousChaine(ne,ne1,ne2), Str)
         else 
-          (raise TypeInattendu(te, Str))
+          raise (TypeInattendu (te, Str))
       end
     | AstTds.True -> (True, Bool)
     | AstTds.False -> (False, Bool)
@@ -104,7 +104,8 @@ struct
         | _ ->
           raise (TypeBinaireInattendu (op, te1, te2))
       end
-    | AstTds.Chaine(e) ->
+    | AstTds.Chaine(a) ->  (Chaine(a),Str)
+     
       
 
   (* analyser_instruction : AstTds.instruction -> AstType.instruction *)
@@ -144,6 +145,7 @@ struct
           | Int -> AffichageInt(ne)
           | Rat -> AffichageRat(ne)
           | Bool -> AffichageBool(ne)
+          | Str -> AffichageStr(ne)
           | Undefined ->
             raise (ErreurInterne)
       end

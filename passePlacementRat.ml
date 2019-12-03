@@ -21,7 +21,8 @@ struct
     (* Placer la taille mémoire nécessaire au placement de la déclaration 
     et se décaler dans le placement de la suite *)
     | AstType.Declaration(e, info_ast) ->
-      let t = getTaille (getType info_ast) in
+      let typ = (getType info_ast) in 
+      let t = getTaille typ in
       modifier_adresse_info dep reg info_ast;
       (t+dep, AstType.Declaration(e, info_ast))
     (* Ici pas besoin dans se décaler par la suite car les déclarations

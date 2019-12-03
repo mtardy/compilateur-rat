@@ -14,7 +14,8 @@ let est_compatible t1 t2 =
   | Bool, Bool -> true
   | Int, Int -> true
   | Rat, Rat -> true 
-  | _ -> false 
+  | Str, Str -> true
+  | _ -> false
 
 let est_compatible_list lt1 lt2 =
   try
@@ -26,6 +27,6 @@ let getTaille t =
   | Int -> 1
   | Bool -> 1
   | Rat -> 2
+  | Str -> 1
   | Undefined -> 0
-  | _ -> failwith "getTaille String appelé"
   

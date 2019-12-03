@@ -246,6 +246,7 @@ type bloc = instruction list
   | AffichageInt of expression
   | AffichageRat of expression
   | AffichageBool of expression
+  | AffichageStr of expression
   | Conditionnelle of expression * bloc * bloc
   | TantQue of expression * bloc
   | Empty (* les nœuds ayant disparus: Const *)

@@ -18,6 +18,17 @@ struct
   (* Erreur si l'utilisation des types est incorrect *)
   let rec analyse_expression e =
     match e with
+    (* On verifie que l'ont a bien une string et deux int *)
+    | AstTds.SousChaine(e,e1,e2) ->
+      begin
+        let (ne,te) = analyse_expression e in
+        let (ne1,te1) = analyse_expression e1 in
+        let (ne2,te2) = analyse_expression e2 in
+        if (est_compatible te Str) then
+          (SousChaine(ne,ne1,ne2), Str)
+        else 
+          (raise TypeInattendu(te, Str))
+      end
     | AstTds.True -> (True, Bool)
     | AstTds.False -> (False, Bool)
     | AstTds.Entier(a) -> (Entier(a), Int)
@@ -40,6 +51,15 @@ struct
           (Denominateur(ne), Int)
         else
           raise (TypeInattendu (te, Rat))
+      end
+      (* Verifie que l'on prend bien une strign en arguments *)
+    | AstTds.Taille(e) -> 
+      let (ne,te) = analyse_expression e in
+      begin 
+      if (est_compatible te Str) then
+        (Taille(ne),Int)
+      else 
+        raise (TypeInattendu (te, Str))
       end
     (* Vérifie que le type est bien construit à partir de deux entiers *)
     | AstTds.Rationnel(e1, e2) ->
@@ -84,6 +104,8 @@ struct
         | _ ->
           raise (TypeBinaireInattendu (op, te1, te2))
       end
+    | AstTds.Chaine(e) ->
+      
 
   (* analyser_instruction : AstTds.instruction -> AstType.instruction *)
   (* Paramètre : l'instruction à analyser *)

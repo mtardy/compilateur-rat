@@ -1,0 +1,2 @@
+On ne verifie pas si les indices sont dans la range de la string -> Erreur au moment du Runtime
+Ce serait possible en faisant remonter sur les expression un int qui a la valeur de l'expression si c'ests un Int

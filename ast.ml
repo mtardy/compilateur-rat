@@ -218,19 +218,22 @@ module AstType =
 struct
 
 (* Opérateurs binaires existants dans Rat - résolution de la surcharge *)
-type binaire = PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBool | Inf
+type binaire = PlusInt | PlusRat | MultInt | MultRat | EquInt | EquBool | Inf | Concat
 
 (* Expressions existantes dans Rat *)
 (* = expression de AstTds *)
 type expression =
+  | SousChaine of expression * expression * expression
   | AppelFonction of Tds.info_ast * expression list
   | Rationnel of expression * expression
   | Numerateur of expression
   | Denominateur of expression
+  | Taille of expression
   | Ident of Tds.info_ast
   | True
   | False
   | Entier of int
+  | Chaine of string
   | Binaire of binaire * expression * expression
 
 (* instructions existantes Rat *)

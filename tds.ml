@@ -1,11 +1,15 @@
 open Hashtbl
 open Type
 
+
 (* Définition du type des informations associées aux identifiants *)
 type info =
   | InfoConst of string * int
   | InfoVar of string * typ * int * string
-  | InfoFun of string * typ * typ list
+  | InfoFun of string * typ * (typ list)
+   (* Info d'une fonction de la passe tds à type *)
+  | InfoMultiFun of string * typ * ((typ list)*info) list
+
 
 (* Données stockées dans la tds  et dans les AST : pointeur sur une information *)
 type info_ast = info ref  
@@ -29,7 +33,7 @@ let creerTDSFille mere = Courante (mere, Hashtbl.create 100)
 let ajouter tds nom info =
   match tds with
   | Nulle -> failwith "Ajout dans une table vide"
-  | Courante (_,c) -> Hashtbl.add c nom info
+  | Courante (_,c) -> Hashtbl.add c nom info 
 
 let chercherLocalement tds nom =
   match tds with
@@ -51,6 +55,7 @@ let string_of_info info =
   | InfoVar (n,t,dep,base) -> "Variable "^n^" : "^(string_of_type t)^" "^(string_of_int dep)^"["^base^"]"
   | InfoFun (n,t,tp) -> "Fonction "^n^" : "^(List.fold_right (fun elt tq -> if tq = "" then (string_of_type elt) else (string_of_type elt)^" * "^tq) tp "" )^
                       " -> "^(string_of_type t)
+  | InfoMultiFun(n,t,l) -> "MultiFun" ^ n
 
 
 let afficher_locale tds =
@@ -68,17 +73,47 @@ let afficher_globale tds =
                         else Hashtbl.iter ( fun n info -> (print_string (indent^n^" : "^(string_of_info (info_ast_to_info info))^"\n"))) c ; afficher m (indent^"  ")
   in afficher tds ""
 
-
   let modifier_type_info t i =
     match !i with
     |InfoVar (n,_,dep,base) -> i:= InfoVar (n,t,dep,base)
     | _ -> failwith "Appel modifier_type_info pas sur un InfoVar"
  
- let modifier_type_fonction_info t tp i =
+ let modifier_type_fonction_info t i =
        match !i with
-       |InfoFun(n,_,_) -> i:= InfoFun(n,t,tp)
+      (* Au niveau de la passe de typage -> MultiFun -> InfoFun a suppr*)
+       |InfoFun(n,_,lp) -> i:= InfoFun(n,t,lp)
+       |InfoMultiFun(n,_,lp) -> i:= InfoMultiFun(n,t,lp)
        | _ -> failwith "Appel modifier_type_fonction_info pas sur un InfoFun"
  
+ (* Génération d'étiquette pour les fonctions*)
+let getEtiquetteFun nom = 
+  let num = ref 0 in
+  fun () ->
+    num := (!num)+1 ;
+    nom^((string_of_int (!num)))
+
+
+ let ajouterTypeParamFun ltyp i=
+    match !i with
+    (* On ajoute à l'info multiFun la liste des type et la future InfoFun associer à
+    la fonction qui prend ltyp en parametres *)
+    | InfoMultiFun(n,t,lp) -> 
+     let info = InfoFun(getEtiquetteFun n (),t,ltyp) in
+     i:= InfoMultiFun(n,t,(ltyp,info)::lp);
+     info_to_info_ast info
+    | _ -> failwith "Ajout d'une list de parametre a autre chose qu'une infoMultiFun"
+   
+  let rec est_compatible_fun typelist ltypinfolist = match ltypinfolist with
+    | [] -> None
+    | (ltyp,info)::t ->
+      begin
+      if (est_compatible_list ltyp typelist) then
+        Some (info_to_info_ast info)
+      else
+        est_compatible_fun typelist t
+      end
+
+
  let modifier_adresse_info d b i =
      match !i with
      |InfoVar (n,t,_,_) -> i:= InfoVar (n,t,d,b)
@@ -89,13 +124,14 @@ let getType info_pointeur =
   match info with
   | InfoVar(_, t, _, _) -> t
   | InfoFun(_, t, _) -> t
+  | InfoMultiFun(_,t,_) -> t
   (* Code mort en théorie car les InfoConst ont été supprimé à la phase de Tds*)
   | InfoConst(_, _) -> Type.Int 
 
 let getTypeParam info_pointeur =
   let info = info_ast_to_info info_pointeur in
   match info with
-  | InfoFun(_, _, lt) ->
+  | InfoMultiFun(_, _, lt) ->
     lt
   | _ ->
     failwith "Appel incorrect: GetTypeParam uniquement sur InfoFun"

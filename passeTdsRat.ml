@@ -34,7 +34,7 @@ let rec analyse_tds_expression tds e =
           begin
             (* S'assurer que l'appel est bien fait sur un identifiant de fonction *)
             match (info_ast_to_info info) with
-            | InfoFun(_) ->
+            | InfoMultiFun(_) ->
               (* Transforme le nom en info *)
               let lexprTds = List.map (fun expr -> analyse_tds_expression tds expr) lexpr in
               AppelFonction(info, lexprTds)
@@ -69,7 +69,7 @@ let rec analyse_tds_expression tds e =
               (* On supprime les InfoConst et on retourne un entier *)
               | InfoConst (_, value) -> Entier(value)
               (* Un identifiant dans une expression ne peut pas être l'identifiant d'une fonction *)
-              | InfoFun(_, _, _) -> raise (MauvaiseUtilisationIdentifiant id)
+              | InfoMultiFun(_) -> raise (MauvaiseUtilisationIdentifiant id)
               | _ -> Ident(infoId)
             end
     end
@@ -213,12 +213,25 @@ let rec analyse_args_function tds (typ,nom) =
 (* Paramètre infoFun_ast : le pointeur vers l'info de la fonction *)
 (* Ajoute l'identifiant de la fonction à la TDS. Cette fonction ne fait que de l'effet de bord *)
 (* Erreur si l'identifiant de la fonction a déjà été déclaré *)
-let ajouter_identifiant_fonction tds nom infoFun_ast =
+let ajouter_identifiant_fonction tds nom = 
   match chercherGlobalement tds nom with
-    | None ->
+    | None -> 
+      (* Créer l'infoFun de la fonction à partir de son nom, son type et le type de ses paramètres *)
+      let infoFun = InfoMultiFun(nom, Undefined, []) in
+      let infoFun_ast = info_to_info_ast infoFun in
       ajouter tds nom infoFun_ast;
-    | Some _ ->
-      raise (DoubleDeclaration nom)
+      infoFun_ast
+    | Some info ->
+      begin
+      (* Dans la structure actuelle il ne peut y avoir que des fonction dans *)
+      (* le corps du programme on s'en assure donc en plus ici *)
+      match (Tds.info_ast_to_info info) with 
+        (* Le nom est deja pris par une fonction -> On a affaire à une surcharge *)
+        | InfoMultiFun(_,_,_) -> info
+        (* Que des fonctions dans le corps *)
+        | _ -> raise (ErreurInterne)
+      end
+      
 
 (* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
 (* Paramètre tds : la table des symboles courante *)
@@ -234,18 +247,17 @@ let analyse_tds_fonction maintds (AstSyntax.Fonction(t,nom,lp,li,e))  =
   (* Analyser d'abord les arguments et les ajouter à la TDS locale *)
   (* Ils peuvent être utilisés dans les instructions et l'expression de retour *)
   let infoListArgs = List.map (fun x -> analyse_args_function tdsFonction x) lp in
-  (* Créer l'infoFun de la fonction à partir de son nom, son type et le type de ses paramètres *)
-  let infoFun = InfoFun(nom, Undefined, []) in
-  let infoFun_ast = info_to_info_ast infoFun in
+
   (* Ajouter l'identifiant de la fonction à la tds avant l'analyse des instructions permet les appels récursifs *)
-  ajouter_identifiant_fonction maintds nom infoFun_ast;
+  let info = ajouter_identifiant_fonction maintds nom in
+
   (* Analyser la liste des instructions dans la fonction *)
   (* On peut déclarer de nouveaux identifiants qui vont être utiliser dans l'expression de retour *)
   let nli = List.map (analyse_tds_instruction tdsFonction) li in
   (* Puis analyser l'expression de retour *)
   let ne = analyse_tds_expression tdsFonction e in
   (* Ajouter la fonction à la tds principale *)
-  Fonction (t, infoFun_ast, infoListArgs, nli, ne)
+  Fonction (t, info, infoListArgs, nli, ne)
 
 (* analyser : AstSyntax.ast -> AstTds.ast *)
 (* Paramètre : le programme à analyser *)

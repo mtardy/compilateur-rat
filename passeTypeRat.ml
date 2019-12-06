@@ -81,12 +81,12 @@ struct
     | AstTds.AppelFonction(info_ast, le) ->
       begin
       let type_param = getTypeParam info_ast in
+      let (lltyp,_) = List.split type_param in
       let nle = List.map analyse_expression le in
       let (lnle, ltype) = List.split nle in
-      if (est_compatible_list type_param ltype) then
-        ((AppelFonction(info_ast, lnle), getType info_ast))
-      else
-        raise (TypesParametresInattendus (ltype,type_param))
+      match (est_compatible_fun ltype type_param) with
+        | Some info -> ((AppelFonction(info, lnle), getType info_ast))
+        | None -> raise (TypesParametresInattendus (ltype,lltyp))
       end
     (* Vérifie que l'opération binaire est possible *)
     | AstTds.Binaire(op, e1, e2) ->
@@ -193,7 +193,8 @@ struct
     (* On récupere la liste d'infos et de types *)
     let (ltyp, linfo_ast) = List.split infoListArgs in
     (* On modifie infoFun en conséquence *)
-    modifier_type_fonction_info typ ltyp infoFun_ast;
+    modifier_type_fonction_info typ infoFun_ast;
+    let newInfoFun = ajouterTypeParamFun ltyp infoFun_ast in
     List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
     (* Analyse instructions *)
     let nli = List.map analyse_instruction li in
@@ -201,7 +202,7 @@ struct
     let (ne,te) = analyse_expression e in
     (* On vérifie que le type de retour concorde au type de la fonction *)
       if est_compatible typ te then
-        Fonction(infoFun_ast, linfo_ast, nli, ne)
+        Fonction(newInfoFun, linfo_ast, nli, ne)
       else
         raise (TypeInattendu(te,typ))
 

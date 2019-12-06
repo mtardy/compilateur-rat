@@ -1,5 +1,8 @@
 open Type 
 
+(* Données stockées dans la tds et dans les AST : pointeur sur une information *)
+type info_ast
+
 (* Définition du type des informations associées aux identifiants *)
 type info =
   (* Information associée à une constante : son nom (non indispensable mais aide au test et debbugage) et sa valeur *)
@@ -9,12 +12,12 @@ type info =
   | InfoVar of string * typ * int * string
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
+  | InfoMultiFun of string * typ * ((typ list) * info) list
 
 (* Table des symboles *)
 type tds 
 
-(* Données stockées dans la tds et dans les AST : pointeur sur une information *)
-type info_ast
+
 
 (* Création d'une table des symboles à la racine *)
 val creerTDSMere : unit -> tds 
@@ -55,8 +58,12 @@ val info_ast_to_info : info_ast -> info
 (* Modifie le type si c'est une InfoVar, ne fait rien sinon *)
 val modifier_type_info : typ -> info_ast -> unit
 
-(* Modifie les types de retour et des paramètres si c'est une InfoFun, ne fait rien sinon *)
-val modifier_type_fonction_info : typ -> typ list -> info_ast -> unit
+(* Modifie le types de retour si c'est une InfoFun, ne fait rien sinon *)
+val modifier_type_fonction_info : typ -> info_ast -> unit
+
+(* Ajoute le type des parametres dans l'infoMultiFun et creer la future infoFun
+, ne fait rien sinon *)
+val ajouterTypeParamFun : typ list -> info_ast -> info_ast
 
 (* Modifie l'emplacement (dépl, registre) si c'est une InfoVar, ne fait rien sinon *)
 val modifier_adresse_info : int -> string -> info_ast -> unit
@@ -65,7 +72,9 @@ val modifier_adresse_info : int -> string -> info_ast -> unit
 val getType : info_ast -> typ
 
 (* Renvoie le type des paramètres d'une fonction *)
-val getTypeParam : info_ast -> typ list
+val getTypeParam : info_ast -> ((typ list) * info) list
+
+val est_compatible_fun : typ list -> ((typ list) * info) list -> info_ast option 
 
 val getAddr : info_ast -> int
 

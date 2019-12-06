@@ -64,7 +64,9 @@ prog :
 | lf = fonc  lfi = prog   {let (Programme (lf1,li))=lfi in (Programme (lf::lf1,li))}
 | ID li = bloc            {Programme ([],li)}
 
-fonc : t=typ n=ID PO p=dp PF AO li=is RETURN exp=e PV AF {Fonction(t,n,p,li,exp)}
+fonc : 
+| t=typ n=ID PO p=dp PF AO li=is RETURN exp=e PV AF {Fonction(t,n,p,li,exp)}
+| t=typ n=ID PO p=dp PF PV {Prototype(t,n,p)}
 
 bloc : AO li = is AF      {li}
 

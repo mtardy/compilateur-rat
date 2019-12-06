@@ -1,13 +1,14 @@
 open Hashtbl
 open Type
 
+type etatFun = Proto | Corps
 
 (* Définition du type des informations associées aux identifiants *)
 type info =
   | InfoConst of string * int
   | InfoVar of string * typ * int * string
   | InfoFun of string * typ * (typ list)
-   (* Info d'une fonction de la passe tds à type *)
+  | InfoPreFun of string * typ * typ list * etatFun
   | InfoMultiFun of string * ((typ list)*info) list
 
 

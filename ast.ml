@@ -91,8 +91,9 @@ and instruction =
 
 (* Structure des fonctions de Rat *)
 (* type de retour - nom - liste des paramètres (association type et nom) - corps de la fonction - expression de retour *)
-type fonction = Fonction of typ * string * (typ * string) list * instruction list * expression
-
+type fonction = 
+    | Fonction of typ * string * (typ * string) list * instruction list * expression
+    | Prototype of typ * string * (typ * string) list
 (* Structure d'un programme Rat *)
 (* liste de fonction - programme principal *)
 type programme = Programme of fonction list * bloc
@@ -203,7 +204,9 @@ struct
   (* Structure des fonctions dans notre langage *)
   (* type de retour - nom - liste des paramètres (association type et information sur les paramètres) - corps de la fonction - expression de retour - information sur la fonction*)
   (* le nom de la fonction est gardé car il sera nécessaire au moment de la génération de code*)
-  type fonction = Fonction of typ * Tds.info_ast * (typ * Tds.info_ast ) list * instruction list * expression 
+  type fonction = 
+    | Fonction of typ * Tds.info_ast * (typ * Tds.info_ast ) list * instruction list * expression
+    | Prototype of typ * typ list
 
   (* Structure d'un programme dans notre langage *)
   type programme = Programme of fonction list * bloc

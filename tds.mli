@@ -3,6 +3,9 @@ open Type
 (* Données stockées dans la tds et dans les AST : pointeur sur une information *)
 type info_ast
 
+(* Etat de déclaration de la fonction: état prototype ou déclaration complète du corps *)
+type etatFun = Proto | Corps
+
 (* Définition du type des informations associées aux identifiants *)
 type info =
   (* Information associée à une constante : son nom (non indispensable mais aide au test et debbugage) et sa valeur *)
@@ -12,7 +15,12 @@ type info =
   | InfoVar of string * typ * int * string
   (* Information associée à une fonction : son nom (utile pour l'appel), son type de retour et la liste des types des paramètres *)
   | InfoFun of string * typ * typ list
+  (* Ce type d'info ne sert que pendant la phase de Tds et doit être transformé en InfoFun pour les phases suivantes *)
+  | InfoPreFun of string * typ * typ list * etatFun
+  (* Info d'une fonction de la passe tds à type *)
   | InfoMultiFun of string * ((typ list) * info) list
+
+
 
 (* Table des symboles *)
 type tds 

@@ -242,18 +242,22 @@ let ajouter_identifiant_fonction tds nom =
 (* Vérifie la bonne utilisation des identifiants et tranforme la fonction
 en une fonction de type AstTds.fonction *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let analyse_tds_fonction maintds (AstSyntax.Fonction(t,nom,lp,li,e))  =
+let analyse_tds_fonction maintds fonction =
+  match fonction with
+  | AstSyntax.Prototype(t, nom, lp) ->
+    let info_ast = ajouter_identifiant_fonction maintds nom in
+    let (ltp, _) = List.split lp in
+    Prototype(t, ltp)
+  
+  | AstSyntax.Fonction(t, nom, lp, li, e) ->
   (* L'ordre des opérations est crucial *)
-
   (* Créer une tds locale pour la fonction ses arguments et ses déclarations locales *)
   let tdsFonction = creerTDSFille maintds in
   (* Analyser d'abord les arguments et les ajouter à la TDS locale *)
   (* Ils peuvent être utilisés dans les instructions et l'expression de retour *)
   let infoListArgs = List.map (fun x -> analyse_args_function tdsFonction x) lp in
-
   (* Ajouter l'identifiant de la fonction à la tds avant l'analyse des instructions permet les appels récursifs *)
   let info = ajouter_identifiant_fonction maintds nom in
-
   (* Analyser la liste des instructions dans la fonction *)
   (* On peut déclarer de nouveaux identifiants qui vont être utiliser dans l'expression de retour *)
   let nli = List.map (analyse_tds_instruction tdsFonction) li in

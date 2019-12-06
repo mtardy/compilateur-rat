@@ -214,20 +214,23 @@ let rec analyse_args_function tds (typ,nom) =
 (* Ajoute l'identifiant de la fonction à la TDS. Cette fonction ne fait que de l'effet de bord *)
 (* Erreur si l'identifiant de la fonction a déjà été déclaré *)
 let ajouter_identifiant_fonction tds nom = 
+  (* On cherche si la fonction est deja declaré *)
   match chercherGlobalement tds nom with
     | None -> 
-      (* Créer l'infoFun de la fonction à partir de son nom, son type et le type de ses paramètres *)
-      let infoFun = InfoMultiFun(nom, Undefined, []) in
+      (* Si ce n'est pas le cas, on creer une infoMultiFun avec le nom *)
+      (* On remplira cette infoMultiFun lors de la phase de typage avec les différentes fonctions surchargées *)
+      let infoFun = InfoMultiFun(nom, []) in
       let infoFun_ast = info_to_info_ast infoFun in
       ajouter tds nom infoFun_ast;
       infoFun_ast
     | Some info ->
+    (* Sinon on recupere l'info deja existante *)
       begin
       (* Dans la structure actuelle il ne peut y avoir que des fonction dans *)
       (* le corps du programme on s'en assure donc en plus ici *)
       match (Tds.info_ast_to_info info) with 
         (* Le nom est deja pris par une fonction -> On a affaire à une surcharge *)
-        | InfoMultiFun(_,_,_) -> info
+        | InfoMultiFun(_,_) -> info
         (* Que des fonctions dans le corps *)
         | _ -> raise (ErreurInterne)
       end

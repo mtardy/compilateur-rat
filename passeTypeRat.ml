@@ -78,14 +78,14 @@ struct
           raise (ErreurInterne)
       end
     (* Vérifie que l'appel de la fonction se fait avec des paramètres de types corrects *)
-    | AstTds.AppelFonction(info_ast, le) ->
+    | AstTds.AppelFonction(infoFun_ast, le) ->
       begin
-      let type_param = getTypeParam info_ast in
+      let type_param = getTypeParam infoFun_ast in
       let (lltyp,_) = List.split type_param in
       let nle = List.map analyse_expression le in
       let (lnle, ltype) = List.split nle in
       match (est_compatible_fun ltype type_param) with
-        | Some info -> ((AppelFonction(info, lnle), getType info_ast))
+        | Some info -> ((AppelFonction(info, lnle), getType info))
         | None -> raise (TypesParametresInattendus (ltype,lltyp))
       end
     (* Vérifie que l'opération binaire est possible *)
@@ -189,16 +189,16 @@ struct
   analyse ensuite le bon typage des instructions au sein de la fonction
   puis vérifie que le typage de l'expression retournée est cohérent *)
   (* Erreur si mauvaise utilisation des types *)
-  let analyse_fonction (AstTds.Fonction(typ, infoFun_ast, infoListArgs, li, e)) = (*infolist couple*)
-    (* On récupere la liste d'infos et de types *)
+  let analyse_fonction (AstTds.Fonction(typ, infoMultiFun_ast, infoListArgs, li, e)) = (*infolist couple*)
+    (* On récupere la liste d'infos et de types de la fonction analysée *)
     let (ltyp, linfo_ast) = List.split infoListArgs in
-    (* On modifie infoFun en conséquence *)
-    modifier_type_fonction_info typ infoFun_ast;
-    let type_param = getTypeParam infoFun_ast in
+    (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)
+    let type_param = getTypeParam infoMultiFun_ast in
+    (* On analyse si la fonction est déjà déclaré avec les mêmes types de paramètre *)
     match (est_compatible_fun ltyp type_param) with
         | None ->
           begin
-          let newInfoFun = ajouterTypeParamFun ltyp infoFun_ast in
+          let newInfoFun = ajouterTypeParamFun ltyp infoMultiFun_ast typ in
           List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
           (* Analyse instructions *)
           let nli = List.map analyse_instruction li in
@@ -210,7 +210,7 @@ struct
           else
             raise (TypeInattendu(te,typ))
           end
-        | Some _ -> failwith "double declaration fonction"
+        | Some _ -> raise (DoubleDeclaration (getFunNom infoMultiFun_ast))
           
 
   (* analyser : AstTds.ast -> AstType.ast *)

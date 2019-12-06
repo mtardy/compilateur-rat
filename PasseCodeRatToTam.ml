@@ -75,7 +75,7 @@ let rec analyse_expression e =
         | MultInt -> "SUBR IMul\n"
         | MultRat -> "CALL (SB) RMul\n"
         | EquInt -> "SUBR IEq\n"
-        (* ATTention ! Il faut verifier 0 == 0*)
+        (* Attention ! Il faut verifier 0 == 0*)
         | EquBool -> "SUBR BAnd\n"
         | Inf -> "SUBR ILss\n"
         | Concat -> "CALL (SB) SCat\n"

@@ -2,19 +2,11 @@ int f (int a int b){
   return (a+b);
 }
 
-int f (rat a int b) {
-    return 1;
+string f (int b) {
+    return "salut";
 }
 
 test{
-    int a = 1;
-    int b = 2;
-    if (a=1) {
-        a = 2;
-    } else {
-        a = 3;
-    }
-    while (b < 6) {
-        b = (b + 1);
-    }
+    print call f (1 2);
+    print call f (3);
 }

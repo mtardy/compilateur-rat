@@ -194,17 +194,24 @@ struct
     let (ltyp, linfo_ast) = List.split infoListArgs in
     (* On modifie infoFun en conséquence *)
     modifier_type_fonction_info typ infoFun_ast;
-    let newInfoFun = ajouterTypeParamFun ltyp infoFun_ast in
-    List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
-    (* Analyse instructions *)
-    let nli = List.map analyse_instruction li in
-    (* Analyse du retour *)
-    let (ne,te) = analyse_expression e in
-    (* On vérifie que le type de retour concorde au type de la fonction *)
-      if est_compatible typ te then
-        Fonction(newInfoFun, linfo_ast, nli, ne)
-      else
-        raise (TypeInattendu(te,typ))
+    let type_param = getTypeParam infoFun_ast in
+    match (est_compatible_fun ltyp type_param) with
+        | None ->
+          begin
+          let newInfoFun = ajouterTypeParamFun ltyp infoFun_ast in
+          List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
+          (* Analyse instructions *)
+          let nli = List.map analyse_instruction li in
+          (* Analyse du retour *)
+          let (ne,te) = analyse_expression e in
+          (* On vérifie que le type de retour concorde au type de la fonction *)
+          if est_compatible typ te then
+            Fonction(newInfoFun, linfo_ast, nli, ne)
+          else
+            raise (TypeInattendu(te,typ))
+          end
+        | Some _ -> failwith "double declaration fonction"
+          
 
   (* analyser : AstTds.ast -> AstType.ast *)
   (* Paramètre : le programme à analyser *)

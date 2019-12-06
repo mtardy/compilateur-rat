@@ -184,7 +184,7 @@ let sout =
     JUMP copiec2
     fincopiec2
     LOAD (1) 4[LB] ; on charge le résultat - ie l'adresse
-    RETURN (1) 2; dépile les deux adresses, laisse en sommet de pile l'adresse de la chaine concatenee \n\n "
+    RETURN (1) 2; dépile les deux adresses, laisse en sommet de pile l'adresse de la chaine concatenee \n\n"
   
   let ssub =
     "SSub ; -3[LB] adresse de la chaine - -2[LB] indice de départ - -1[LB] indice de fin

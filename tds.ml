@@ -86,11 +86,11 @@ let afficher_globale tds =
        | _ -> failwith "Appel modifier_type_fonction_info pas sur un InfoFun"
  
  (* Génération d'étiquette pour les fonctions*)
-let getEtiquetteFun nom = 
+let getEtiquetteFun = 
   let num = ref 0 in
   fun () ->
     num := (!num)+1 ;
-    nom^((string_of_int (!num)))
+    "f"^((string_of_int (!num)))
 
 
  let ajouterTypeParamFun ltyp i=
@@ -98,7 +98,7 @@ let getEtiquetteFun nom =
     (* On ajoute à l'info multiFun la liste des type et la future InfoFun associer à
     la fonction qui prend ltyp en parametres *)
     | InfoMultiFun(n,t,lp) -> 
-     let info = InfoFun(getEtiquetteFun n (),t,ltyp) in
+     let info = InfoFun(n^(getEtiquetteFun ()),t,ltyp) in
      i:= InfoMultiFun(n,t,(ltyp,info)::lp);
      info_to_info_ast info
     | _ -> failwith "Ajout d'une list de parametre a autre chose qu'une infoMultiFun"

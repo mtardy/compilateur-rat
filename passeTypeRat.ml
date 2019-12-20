@@ -80,12 +80,21 @@ struct
     (* Vérifie que l'appel de la fonction se fait avec des paramètres de types corrects *)
     | AstTds.AppelFonction(infoFun_ast, le) ->
       begin
+      (* On recupere les type et info des arguments*)
       let type_param = getTypeParam infoFun_ast in
+      (* On garde la liste des liste de type des parametre (surcharge) *)
       let (lltyp,_) = List.split type_param in
+      (* Analyse de l'expression *)
       let nle = List.map analyse_expression le in
+      (* On recupere la liste de type et la liste de nouvelle expr *)
       let (lnle, ltype) = List.split nle in
+      (* On cherche une fonction avec la liste de type correspondant *)
+      (* C'est ici que pose probleme la surcharge du type de retour :
+      il nous faudrait retourner une liste de type possible de l'expression *)
       match (est_compatible_fun ltype type_param) with
+        (* On a trouvé une infoFun correspondante *)
         | Some info -> ((AppelFonction(info, lnle), getType info))
+        (* Pas de fonction declaré avec cette liste de type *)
         | None -> raise (TypesParametresInattendus (ltype,lltyp))
       end
     (* Vérifie que l'opération binaire est possible *)
@@ -189,28 +198,85 @@ struct
   analyse ensuite le bon typage des instructions au sein de la fonction
   puis vérifie que le typage de l'expression retournée est cohérent *)
   (* Erreur si mauvaise utilisation des types *)
-  let analyse_fonction (AstTds.Fonction(typ, infoMultiFun_ast, infoListArgs, li, e)) = (*infolist couple*)
-    (* On récupere la liste d'infos et de types de la fonction analysée *)
-    let (ltyp, linfo_ast) = List.split infoListArgs in
-    (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)
-    let type_param = getTypeParam infoMultiFun_ast in
-    (* On analyse si la fonction est déjà déclaré avec les mêmes types de paramètre *)
-    match (est_compatible_fun ltyp type_param) with
-        | None ->
-          begin
-          let newInfoFun = ajouterTypeParamFun ltyp infoMultiFun_ast typ in
-          List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
-          (* Analyse instructions *)
-          let nli = List.map analyse_instruction li in
-          (* Analyse du retour *)
-          let (ne,te) = analyse_expression e in
-          (* On vérifie que le type de retour concorde au type de la fonction *)
-          if est_compatible typ te then
-            Fonction(newInfoFun, linfo_ast, nli, ne)
-          else
-            raise (TypeInattendu(te,typ))
-          end
-        | Some _ -> raise (DoubleDeclaration (getFunNom infoMultiFun_ast))
+  let analyse_fonction f = 
+    match f with
+      |(AstTds.Fonction(typ, infoMultiFun_ast, infoListArgs, li, e)) ->
+        begin
+        (* On récupere la liste d'infos et de types de la fonction analysée *)
+        let (ltyp, linfo_ast) = List.split infoListArgs in
+        (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)
+        let type_param = getTypeParam infoMultiFun_ast in
+        (* On analyse si la fonction est déjà déclaré avec les mêmes types de paramètre *)
+        match (est_compatible_fun ltyp type_param) with
+            | None ->
+              begin
+              let newInfoFun = ajouterTypeParamFun ltyp infoMultiFun_ast typ true in
+              List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
+              (* Analyse instructions *)
+              let nli = List.map analyse_instruction li in
+              (* Analyse du retour *)
+              let (ne,te) = analyse_expression e in
+              (* On vérifie que le type de retour concorde au type de la fonction *)
+              if est_compatible typ te then
+                Fonction(newInfoFun, linfo_ast, nli, ne)
+              else
+                raise (TypeInattendu(te,typ))
+              end
+            | Some info ->
+              begin
+              (* On regarde pour le type de retour *)
+              (* Si le type de retour correspond, on verifie que la declaration precedente est un prototype*)
+              if est_compatible typ (getType info) then
+                begin
+                  match (info_ast_to_info info) with
+                    | InfoFun(n,t,lt,b) -> 
+                        (* Si b = false, la declaration est protoypé *)
+                        if b = false then
+                        begin
+                          (* On indique que la fonction possede un corps *)
+                          modifier_bol_infoFun info true;
+                          List.iter (fun (typ,info) -> modifier_type_info typ info) infoListArgs;
+                          let nli = List.map analyse_instruction li in
+                          let (ne,te) = analyse_expression e in
+                          (* On vérifie que le type de retour concorde au type de la fonction *)
+                          if est_compatible typ te then
+                            Fonction(info, linfo_ast, nli, ne)
+                          else
+                            raise (TypeInattendu(te,typ))
+                        end
+                        (* Sinon, double declaration *)
+                        else
+                          raise (DoubleDeclaration (getFunNom infoMultiFun_ast))
+                    | _ -> failwith "ErreurInterne"
+                end  
+              else
+                (* Le type de retour ne correspond pas à la declaration précédente *)
+                failwith "Surcharge sur le type de retour avec meme type de parametres"
+            end
+        end
+      | AstTds.Prototype(typ,infoMultiFun,ltyp) ->
+        begin
+        (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)
+        let type_param = getTypeParam infoMultiFun in
+        (* On analyse si la fonction est déjà déclaré avec les mêmes types de paramètre *)
+        match (est_compatible_fun ltyp type_param) with
+            (* Si ce n'est pas la cas, on ajoute a l'info multiFun cette fonction *)
+            | None ->
+              let _ = ajouterTypeParamFun ltyp infoMultiFun typ false in
+              (* Nous n'avons plus besoin d'information du Prototype aprés *)
+              Prototype
+            | Some info -> 
+            (* On regarde si le type de retour correspond à la declaration précédente *)
+            if est_compatible typ (getType info) then
+              (* On a deja declaré la fonction avant -> proto inutile ou double proto *)
+              raise (DoubleDeclaration (getFunNom infoMultiFun))
+            else
+              (* On a une fonction de meme parametre mais avec un type de retour différent :
+              surcharge du type de retour *)
+              failwith "Surcharge sur le type de retour avec meme type de parametres"
+              (*let _ = ajouterTypeParamFun ltyp infoMultiFun typ false in
+              Prototype*)
+        end
           
 
   (* analyser : AstTds.ast -> AstType.ast *)

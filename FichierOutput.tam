@@ -173,12 +173,18 @@ SCat ; concatene deux chaines de caracteres passées en paramètre -2[LB] adress
     LOAD (1) 4[LB] ; on charge le résultat - ie l'adresse
     RETURN (1) 2; dépile les deux adresses, laisse en sommet de pile l'adresse de la chaine concatenee 
 
-f#1
-LOAD (1) -2[LB]
-LOAD (1) -1[LB]
-SUBR IAdd
+h#15
+LOADL 1
+LOADL 2
+CALL (SB) f#13
+RETURN (1) 0
+f#13
+LOADL 1
 RETURN (1) 2
-f#2
+f#14
+LOADL 2
+RETURN (1) 4
+f#16
 LOADL 6
 SUBR MAlloc
 LOADL 5
@@ -193,9 +199,9 @@ RETURN (1) 1
 main
 LOADL 1
 LOADL 2
-CALL (SB) f#1
+CALL (SB) f#13
 SUBR IOut
 LOADL 3
-CALL (SB) f#2
+CALL (SB) f#16
 CALL (SB) SOut
 HALT

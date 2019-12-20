@@ -60,13 +60,23 @@ open Ast.AstSyntax
 
 main : lfi = prog EOF     {lfi}
 
-prog :
+(*prog :
 | lf = fonc  lfi = prog   {let (Programme (lf1,li))=lfi in (Programme (lf::lf1,li))}
-| ID li = bloc            {Programme ([],li)}
+| ID li = bloc            {Programme ([],li)}*)
+
+prog :
+| f1 = dfs  lfi = bloc f2 = dfs   {(Programme (f1,li,f2))}
+
+dfs :
+|                       {Dfs([],[])}
+| d = decl df = dfs     {d::df}
+| f = fun df = dfs      {f::df}
 
 fonc : 
-| t=typ n=ID PO p=dp PF AO li=is RETURN exp=e PV AF {Fonction(t,n,p,li,exp)}
-| t=typ n=ID PO p=dp PF PV {Prototype(t,n,p)}
+|t=typ n=ID PO p=dp PF AO li=is RETURN exp=e PV AF {Fonction(t,n,p,li,exp)}
+
+decl :
+|t=typ n=ID PO p=dp PF PV {Prototype(t,n,p)}
 
 bloc : AO li = is AF      {li}
 

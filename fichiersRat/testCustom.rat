@@ -1,5 +1,17 @@
+int f (int a int b);
+
+string f (int a int g);
+
+int h (){
+    return call f (1 2);
+}
+
 int f (int a int b){
-  return (a+b);
+    return 1;
+}
+
+int f (rat a rat b){
+  return 2;
 }
 
 string f (int b) {

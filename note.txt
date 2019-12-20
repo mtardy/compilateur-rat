@@ -1,3 +1,12 @@
 On ne verifie pas si les indices sont dans la range de la string -> Erreur au moment du Runtime
 Ce serait possible en faisant remonter sur les expression un int qui a la valeur de l'expression si c'ests un Int
 C'est n'importe quoi, on n'importe tout
+
+Le probleme de la surcharge de type de retour vient de l'appel de fonction, au moment de l'analyse des 
+parametre on peut avoir plusieurs type de retour.
+
+int f(int a)
+
+string f(int a)
+
+On doit alors renvoyer une liste de type possible et decider de la bonne infoFun a posteriori.

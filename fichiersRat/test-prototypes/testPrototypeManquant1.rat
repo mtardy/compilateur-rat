@@ -1,0 +1,11 @@
+test {
+    print call f (2);
+}
+
+int f (int a) {
+    return call g (a);
+}
+
+int g (int b) {
+    return (b + 1);
+}

@@ -1,0 +1,14 @@
+int f (int a);
+
+test {
+    print call f (2);
+    print call f ([3/4]);
+}
+
+int f (int a) {
+    return a;
+}
+
+int f (rat a) {
+    return num a;
+}

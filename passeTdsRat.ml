@@ -219,8 +219,8 @@ let ajouter_identifiant_fonction tds nom =
     | None -> 
       (* Si ce n'est pas le cas, on creer une infoMultiFun avec le nom *)
       (* On remplira cette infoMultiFun lors de la phase de typage avec les différentes fonctions surchargées *)
-      let infoFun = InfoMultiFun(nom, []) in
-      let infoFun_ast = info_to_info_ast infoFun in
+      let infoMultiFun = InfoMultiFun(nom, []) in
+      let infoFun_ast = info_to_info_ast infoMultiFun in
       ajouter tds nom infoFun_ast;
       infoFun_ast
     | Some info ->
@@ -248,7 +248,6 @@ let analyse_tds_fonction maintds fonction =
     let info_ast = ajouter_identifiant_fonction maintds nom in
     let (ltp, _) = List.split lp in
     Prototype(t,info_ast,ltp)
-  
   | AstSyntax.Fonction(t, nom, lp, li, e) ->
   (* L'ordre des opérations est crucial *)
   (* Créer une tds locale pour la fonction ses arguments et ses déclarations locales *)
@@ -271,10 +270,11 @@ let analyse_tds_fonction maintds fonction =
 (* Vérifie la bonne utilisation des identifiants et tranforme le programme
 en un programme de type AstTds.ast *)
 (* Erreur si mauvaise utilisation des identifiants *)
-let analyser (AstSyntax.Programme (fonctions,prog)) =
+let analyser (AstSyntax.Programme(fonctions1, prog, fonctions2)) =
   let tds = creerTDSMere () in
-  let nf = List.map (analyse_tds_fonction tds) fonctions in
+  let nf1 = List.map (analyse_tds_fonction tds) fonctions1 in
   let nb = analyse_tds_bloc tds prog in
-  Programme (nf, nb)
+  let nf2 = List.map (analyse_tds_fonction tds) fonctions2 in
+  Programme (nf1, nb, nf2)
 
 end

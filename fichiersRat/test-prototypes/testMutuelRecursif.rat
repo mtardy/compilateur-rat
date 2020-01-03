@@ -1,0 +1,20 @@
+int f (int a);
+int g (int b);
+
+test {
+    print call f (2);
+}
+
+int f (int a) {
+    int res = 0;
+    if (a = 10) {
+        res = 0;
+    } else {
+        res = call g (a);
+    }
+    return res;
+}
+
+int g (int b) {
+    return call f ((b + 1));
+} 

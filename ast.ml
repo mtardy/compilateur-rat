@@ -93,12 +93,10 @@ and instruction =
 (* type de retour - nom - liste des paramètres (association type et nom) - corps de la fonction - expression de retour *)
 type fonction = 
     | Fonction of typ * string * (typ * string) list * instruction list * expression
-
-type decl = 
     | Prototype of typ * string * (typ * string) list
 (* Structure d'un programme Rat *)
 (* liste de fonction - programme principal *)
-type programme = Programme of fonction list * bloc *
+type programme = Programme of fonction list * bloc * fonction list
 
 end
 
@@ -153,12 +151,13 @@ struct
     |(Fonction(t,n,lp,li,e)) -> (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^") = \n"^
                                         ((List.fold_right (fun i tq -> (string_of_instruction i)^tq) li ""))^
                                         "Return "^(string_of_expression e)^"\n"
-    | Prototype(t,n,lp) -> (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^"); \n"
+    | (Prototype(t,n,lp)) -> (string_of_type t)^" "^n^" ("^((List.fold_right (fun (t,n) tq -> (string_of_type t)^" "^n^" "^tq) lp ""))^"); \n"
 
   (* Conversion d'un programme Rat *)
-  let string_of_programme (Programme (fonctions, instruction)) =
-    (List.fold_right (fun f tq -> (string_of_fonction f)^tq) fonctions "")^
-    (List.fold_right (fun i tq -> (string_of_instruction i)^tq) instruction "")
+  let string_of_programme (Programme (fonctions1, instruction, fonctions2)) =
+    (List.fold_right (fun f tq -> (string_of_fonction f)^tq) fonctions1 "")^
+    (List.fold_right (fun i tq -> (string_of_instruction i)^tq) instruction "")^
+    (List.fold_right (fun f tq -> (string_of_fonction f)^tq) fonctions2 "")
 
   (* Affichage d'un programme Rat *)
   let print_programme programme =
@@ -213,7 +212,7 @@ struct
     | Prototype of typ * Tds.info_ast * typ list
 
   (* Structure d'un programme dans notre langage *)
-  type programme = Programme of fonction list * bloc
+  type programme = Programme of fonction list * bloc * fonction list
 
 end
     
@@ -261,7 +260,7 @@ type bloc = instruction list
 (* nom, liste des paramètres, corps, expression de retour, informations associées à l'identificateur *)
 type fonction = 
   | Fonction of Tds.info_ast * Tds.info_ast list * instruction list * expression 
-  | Prototype
+  | Prototype of Tds.info_ast * typ list
 
 (* Structure d'un programme dans notre langage *)
 type programme = Programme of fonction list * bloc

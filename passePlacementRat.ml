@@ -78,7 +78,30 @@ struct
     (* Analyse du bloc en partant de 3 "LB" car nous sommes dans une fonction *)
     let nli = analyse_bloc 3 "LB" li in
     Fonction(info_ast, lp, nli, e)
-    | AstType.Prototype -> Prototype
+    | AstType.Prototype(infoMultiFun_ast, ltyp) ->
+      begin
+      (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)
+      let type_param = getTypeParam infoMultiFun_ast in
+      (* On analyse si la fonction est déjà déclaré avec les mêmes types de paramètre *)
+      match (est_compatible_fun ltyp type_param) with
+        | None ->
+          failwith "Erreur interne: cette erreur aurait dû être levée dans la phase de typage."
+        | Some info_ast ->
+          begin
+          match info_ast_to_info info_ast with
+          | InfoFun(n,t,lt,b) ->
+            begin
+            if (not b) then
+              (* Les fonctions possèdent une étiquette pour la surcharge qu'on élimine 
+              lors de l'affichage de l'erreur *)
+              raise (CorpsFonctionManquant (List.hd (String.split_on_char '#' n)))
+            else
+              Prototype
+            end
+          | _ -> failwith "Erreur interne: les info de prototypes sont des InfoFun."
+          end
+        end
+
 
   (* analyser : AstType.programme -> AstPlacement.programme*)
   (* Paramètre : le programme à analyser *)

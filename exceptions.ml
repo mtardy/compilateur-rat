@@ -13,3 +13,9 @@ exception TypesParametresInattendus of typ list * (typ list) list
 exception TypeBinaireInattendu of binaire * typ * typ (* les types sont les types réels non compatible avec les signatures connues de l'opérateur *)
 
 exception ErreurInterne
+
+(* Exceptions pour les prototypes *)
+exception CorpsFonctionManquant of string
+
+(* Exceptions pour la surcharge *)
+exception SurchargeTypeRetour of string

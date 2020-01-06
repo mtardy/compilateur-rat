@@ -39,7 +39,7 @@ let test fichier fonction (var,occ) (dep,registre) =
     else 
       aux (i-1) (List.remove_assoc var lmain)
   in aux occ lmain
-(*
+
 let%test "test1_x" = 
   test "../../fichiersRat/src-rat-placement-test/test1.rat"  "main" ("x",1)  (0,"SB")
 
@@ -168,7 +168,7 @@ let%test "test6_z1" =
     
   let%test "test8_z1" = 
     test "../../fichiersRat/src-rat-placement-test/test8.rat"  "main" ("z1",1)  (7, "SB")
-
+(*
   let%test "test8_f_x_1" = 
     test "../../fichiersRat/src-rat-placement-test/test8.rat"  "f" ("x",1)  (3, "LB")
     

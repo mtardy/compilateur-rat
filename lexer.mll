@@ -42,6 +42,9 @@ rule token = parse
 | "^"       {CONCAT}
 | "length"  {LENGTH}
 | ","       {V}
+| "&"       {AMP}
+| "new"     {NEW}
+| "null"    {NULL}
 | '"'([^'"']* as c)'"'
     { CHAINE c }
 | ['0'-'9']+ as i

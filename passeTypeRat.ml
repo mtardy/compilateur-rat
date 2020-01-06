@@ -11,6 +11,16 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
+  let rec analyse_affectable_lecture a =
+    match a with
+    | AstTds.Ident info_ast ->
+      (Ident(info_ast), getType info_ast)
+    | AstTds.Valeur aff ->
+      analyse_affectable_lecture aff
+  
+  let analyse_affectable_ecriture a =
+    a
+
   (* analyse_expression : Rat.Ast.AstTds.expression -> Rat.Ast.AstType.expression * Rat.Type.typ *)
   (* Paramètre e : l'expression à analyser *)
   (* Vérifie que le typage est correct dans l'expression et renvoie un couple
@@ -32,8 +42,6 @@ struct
     | AstTds.True -> (True, Bool)
     | AstTds.False -> (False, Bool)
     | AstTds.Entier(a) -> (Entier(a), Int)
-    | AstTds.Ident info_ast ->
-      (Ident(info_ast), getType info_ast)
     (* Vérifie que le type est bien un rationnel *)
     | AstTds.Numerateur(e) ->
       begin
@@ -114,9 +122,14 @@ struct
         | _ ->
           raise (TypeBinaireInattendu (op, te1, te2))
       end
-    | AstTds.Chaine(a) ->  (Chaine(a),Str)
-     
-      
+    | AstTds.Chaine(a) ->  (Chaine(a), Str)
+    | AstTds.New(typ) -> (New(typ), typ)
+    | AstTds.Adresse(info_ast) ->
+      (Adresse(info_ast), Pointeur(getType info_ast))
+    | AstTds.Acces(a) ->
+      let (na, ta) = analyse_affectable_lecture a in
+      (Acces(na), ta)
+    | AstTds.Null -> (Null, Pointeur(Undefined))
 
   (* analyser_instruction : AstTds.instruction -> AstType.instruction *)
   (* Paramètre : l'instruction à analyser *)
@@ -138,6 +151,7 @@ struct
       end
     (* On vérifie si l'affectation est possible, ie. le type retournée par l'expression
     correspond au type de la variable dans laquelle on l'affecte *)
+    (*
     | AstTds.Affectation(e, info_ast) ->
       begin
         let (ne, te) = analyse_expression e in
@@ -147,6 +161,7 @@ struct
           else
             raise (TypeInattendu (te, t))
       end
+    *)
     (* On retourne des affichages plus spécifiques à chaque types *)
     | AstTds.Affichage(e) ->
       begin

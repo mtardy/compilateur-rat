@@ -65,11 +65,11 @@ let rec analyse_expression e =
       (* On place la chaine dans le tas *)
       ^"STOREI ("^(string_of_int ((List.length l)+1))^")\n"
       (* La haut de la pile est égal à l'adresse de la string *)
-  (* On récupère la taille du type lié à l'identifiant et son adresse *)
-  (* TODO
-  | Ident(info_ast) ->
-    "LOAD ("^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n"
-  *)
+  | SousChaine(e, e1, e2) ->
+    (analyse_expression e)
+    ^(analyse_expression e1)
+    ^(analyse_expression e2)
+    ^"CALL (SB) SSub\n"
   (* On analyse chaque expression du rationnel *)
   | Rationnel(e1, e2) ->
     (analyse_expression e1)

@@ -38,7 +38,14 @@ struct
         let (ne1,te1) = analyse_expression e1 in
         let (ne2,te2) = analyse_expression e2 in
         if (est_compatible te Str) then
-          (SousChaine(ne,ne1,ne2), Str)
+          begin
+          if (est_compatible te1 Int && est_compatible te2 Int) then
+            (SousChaine(ne,ne1,ne2), Str)
+          else if (not (est_compatible te1 Int)) then
+            raise (TypeInattendu (te1, Int))
+          else
+            raise (TypeInattendu (te2, Int))
+          end
         else 
           raise (TypeInattendu (te, Str))
       end

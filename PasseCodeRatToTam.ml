@@ -70,6 +70,10 @@ let rec analyse_expression e =
     ^(analyse_expression e1)
     ^(analyse_expression e2)
     ^"CALL (SB) SSub\n"
+  (* La taille d'une chaîne de caractère est le premier élément de la structure dans le tas *)
+  | Taille(e) ->
+    (analyse_expression e)
+    ^"LOADI (1)"
   (* On analyse chaque expression du rationnel *)
   | Rationnel(e1, e2) ->
     (analyse_expression e1)
@@ -113,9 +117,6 @@ let rec analyse_expression e =
     (analyse_affectable a "LOAD")
   | Adresse(info_ast) ->
     "LOADL "^(string_of_int (getAddr info_ast))^"\n"
-  | _ ->
-    failwith "todo"
-
 
   let taille_i i = match i with
     |Declaration(e,info) -> getTaille (getType info)

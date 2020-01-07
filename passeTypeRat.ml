@@ -70,12 +70,12 @@ struct
         else
           raise (TypeInattendu (te, Rat))
       end
-      (* Verifie que l'on prend bien une strign en arguments *)
+      (* Verifie que l'on prend bien une string en argument *)
     | AstTds.Taille(e) -> 
       let (ne,te) = analyse_expression e in
       begin 
       if (est_compatible te Str) then
-        (Taille(ne),Int)
+        (Taille(ne), Int)
       else 
         raise (TypeInattendu (te, Str))
       end

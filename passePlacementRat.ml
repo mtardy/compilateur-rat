@@ -73,11 +73,11 @@ struct
   let analyse_fonction f = 
     match f with
     | AstType.Fonction(info_ast, lp, li, e) ->
-    (* L'analyse de paramètres n'effectue que des effets de bords *)
-    analyse_param (List.rev lp) 0;
-    (* Analyse du bloc en partant de 3 "LB" car nous sommes dans une fonction *)
-    let nli = analyse_bloc 3 "LB" li in
-    Fonction(info_ast, lp, nli, e)
+      (* L'analyse de paramètres n'effectue que des effets de bords *)
+      analyse_param (List.rev lp) 0;
+      (* Analyse du bloc en partant de 3 "LB" car nous sommes dans une fonction *)
+      let nli = analyse_bloc 3 "LB" li in
+      Fonction(info_ast, lp, nli, e)
     | AstType.Prototype(infoMultiFun_ast, ltyp) ->
       begin
       (* On récupère la liste de couple (infoFun * liste params) dans l'infoMultiFun *)

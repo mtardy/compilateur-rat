@@ -19,7 +19,7 @@ struct
       let ana_aff = analyse_affectable aff in
       begin
       match (snd ana_aff) with
-        | Pointeur(t) -> (fst ana_aff, t)
+        | Pointeur(t) -> (Valeur(fst ana_aff), t)
         | t -> raise (TypeInattendu(t, Pointeur(t)))
       end
   

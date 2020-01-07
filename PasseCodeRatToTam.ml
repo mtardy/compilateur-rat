@@ -12,14 +12,31 @@ struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
 
-(* On transfomre une string en liste *)
+(* Paramètre a : l'affectable dont on veut générer le code *)
+(* Paramètre instruction : l'instruction STORE ou LOAD en fonction de si l'on veut
+respectivement faire une ecriture ou une lecture d'un affectable *)
+(* Génère le code d'un affectable *)
+let analyse_affectable a instruction =
+  let rec aux a =
+    match a with
+    | Ident(info_ast) ->
+      let typ = getType info_ast in
+      (typ, instruction ^ " (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
+    | Valeur(a) ->
+      let typ, s = (aux a) in
+      match typ with
+      | Pointeur(ntyp) -> (ntyp, s^instruction^"I ("^(string_of_int( getTaille (ntyp)))^")\n")
+      | _ -> raise (ErreurInterne)
+  in snd (aux a)
+
+(* On transforme une string en liste *)
 let explode s =
   let rec exp i l =
     if i < 0 then l 
     else exp (i - 1) ((Char.escaped s.[i]) :: l) in
   exp (String.length s - 1) [];;
 
-(* On load chaque caracteres -> A remplacer par un fold *)
+(* On load chaque caractères -> À remplacer par un fold *)
 let rec load_chaine l = match l with
     |[] -> ""
     |h::t -> "LOADL '"^h^"'\n"^(load_chaine t)
@@ -77,7 +94,7 @@ let rec analyse_expression e =
         | MultInt -> "SUBR IMul\n"
         | MultRat -> "CALL (SB) RMul\n"
         | EquInt -> "SUBR IEq\n"
-        (* Attention ! Il faut verifier 0 == 0*)
+        (* Attention ! Il faut vérifier 0 == 0*)
         | EquBool -> "SUBR BAnd\n"
         | Inf -> "SUBR ILss\n"
         | Concat -> "CALL (SB) SCat\n"
@@ -86,8 +103,19 @@ let rec analyse_expression e =
   | AppelFonction(info_ast, le) ->
     List.fold_right (fun e q -> (analyse_expression e)^q) le ""
     ^"CALL (SB) "^(getFunNom info_ast)^"\n"
+  | New(typ) -> 
+    "LOADL "^(string_of_int (getTaille typ))^"\n"
+    ^"SUBR MAlloc\n"
+  | Null ->
+    "LOADL 0\n"
+    ^"SUBR MAlloc\n"
+  | Acces(a) ->
+    (analyse_affectable a "LOAD")
+  | Adresse(info_ast) ->
+    "LOADL "^(string_of_int (getAddr info_ast))^"\n"
   | _ ->
     failwith "todo"
+
 
   let taille_i i = match i with
     |Declaration(e,info) -> getTaille (getType info)
@@ -103,12 +131,10 @@ let rec analyse_expression e =
       "PUSH "^taille^"\n"
       ^(analyse_expression e)
       ^"STORE ("^taille^") "^(string_of_int (getAddr info))^"["^(getReg info)^"]\n"
-    (* TODO
-    | Affectation(e, info) ->
+    | Affectation(a, e) ->
       (* On STORE la valeur affectée à la variable dans la pile *)
-      (analyse_expression e)
-      ^"STORE ("^string_of_int (getTaille (getType info))^") "^(string_of_int (getAddr info))^"["^(getReg info)^"]\n"
-    *)
+      (analyse_expression e)^
+      (analyse_affectable a "STORE")
     | Conditionnelle(e,bt,be) ->
       (* Génération de deux étiquettes *)
       let etiElse = getEtiquette () in

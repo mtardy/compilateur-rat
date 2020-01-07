@@ -20,19 +20,18 @@ let rec analyse_tds_affectable_lecture tds a =
             raise (IdentifiantNonDeclare id)
         | Some infoId ->
           let info = info_ast_to_info infoId in
-            begin
-            match (info) with
-            (* TODO IMPORTANT
-            (* On supprime les InfoConst et on retourne un entier *)
-            | InfoConst (_, value) -> Entier(value)
-            *)
-            (* Un identifiant dans une expression ne peut pas être l'identifiant d'une fonction *)
-            | InfoMultiFun(_) -> raise (MauvaiseUtilisationIdentifiant id)
-            | _ -> Ident(infoId)
+          begin
+          match (info) with
+          (* On supprime les InfoConst et on retourne un entier *)
+          (* Ici, pirouette de l'extrême pour déguiser la constante en affectable *)
+          | InfoConst (n, value) -> Ident(info_to_info_ast (InfoConst(n, value)))
+          (* Un identifiant dans une expression ne peut pas être l'identifiant d'une fonction *)
+          | InfoMultiFun(_) -> raise (MauvaiseUtilisationIdentifiant id)
+          | _ -> Ident(infoId)
           end
     end
-    | AstSyntax.Valeur a ->
-      analyse_tds_affectable_lecture tds a
+    | AstSyntax.Valeur aff ->
+      Valeur(analyse_tds_affectable_lecture tds aff)
 
 
 let rec analyse_tds_affectable_ecriture tds a =
@@ -55,8 +54,8 @@ let rec analyse_tds_affectable_ecriture tds a =
           raise (MauvaiseUtilisationIdentifiant n)
       end
     end
-  | AstSyntax.Valeur (a) ->
-    analyse_tds_affectable_ecriture tds a
+  | AstSyntax.Valeur (aff) ->
+    Valeur(analyse_tds_affectable_ecriture tds aff)
 
 
 (* analyse_tds_expression : AstSyntax.expression -> AstTds.expression *)
@@ -119,7 +118,17 @@ let rec analyse_tds_expression tds e =
     New(typ)
   | AstSyntax.Acces (a) ->
     let na = analyse_tds_affectable_lecture tds a in
-    Acces(na)
+    begin
+    (* On essai d'enlever le déguisement d'affectable des constantes, cf analyse_tds_affectable_lecture *)
+    match na with
+    | Ident(info_ast) ->
+      begin
+      match (info_ast_to_info info_ast) with
+      | InfoConst (_, value) -> Entier(value)
+      | _ -> Acces(na)
+      end
+    | Valeur(_) -> Acces(na)
+    end
   | AstSyntax.Adresse (n) ->
     begin
     match chercherGlobalement tds n with

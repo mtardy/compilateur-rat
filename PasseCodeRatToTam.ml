@@ -49,8 +49,10 @@ let rec analyse_expression e =
       ^"STOREI ("^(string_of_int ((List.length l)+1))^")\n"
       (* La haut de la pile est égal à l'adresse de la string *)
   (* On récupère la taille du type lié à l'identifiant et son adresse *)
+  (* TODO
   | Ident(info_ast) ->
     "LOAD ("^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n"
+  *)
   (* On analyse chaque expression du rationnel *)
   | Rationnel(e1, e2) ->
     (analyse_expression e1)
@@ -101,10 +103,12 @@ let rec analyse_expression e =
       "PUSH "^taille^"\n"
       ^(analyse_expression e)
       ^"STORE ("^taille^") "^(string_of_int (getAddr info))^"["^(getReg info)^"]\n"
+    (* TODO
     | Affectation(e, info) ->
       (* On STORE la valeur affectée à la variable dans la pile *)
       (analyse_expression e)
       ^"STORE ("^string_of_int (getTaille (getType info))^") "^(string_of_int (getAddr info))^"["^(getReg info)^"]\n"
+    *)
     | Conditionnelle(e,bt,be) ->
       (* Génération de deux étiquettes *)
       let etiElse = getEtiquette () in

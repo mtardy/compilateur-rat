@@ -11,15 +11,18 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
-  let rec analyse_affectable_lecture a =
+  let rec analyse_affectable a =
     match a with
     | AstTds.Ident info_ast ->
       (Ident(info_ast), getType info_ast)
     | AstTds.Valeur aff ->
-      analyse_affectable_lecture aff
+      let ana_aff = analyse_affectable aff in
+      begin
+      match (snd ana_aff) with
+        | Pointeur(t) -> (fst ana_aff, t)
+        | t -> raise (TypeInattendu(t, Pointeur(t)))
+      end
   
-  let analyse_affectable_ecriture a =
-    a
 
   (* analyse_expression : Rat.Ast.AstTds.expression -> Rat.Ast.AstType.expression * Rat.Type.typ *)
   (* Paramètre e : l'expression à analyser *)
@@ -123,11 +126,11 @@ struct
           raise (TypeBinaireInattendu (op, te1, te2))
       end
     | AstTds.Chaine(a) ->  (Chaine(a), Str)
-    | AstTds.New(typ) -> (New(typ), typ)
+    | AstTds.New(typ) -> (New(typ), Pointeur(typ))
     | AstTds.Adresse(info_ast) ->
       (Adresse(info_ast), Pointeur(getType info_ast))
     | AstTds.Acces(a) ->
-      let (na, ta) = analyse_affectable_lecture a in
+      let (na, ta) = analyse_affectable a in
       (Acces(na), ta)
     | AstTds.Null -> (Null, Pointeur(Undefined))
 
@@ -151,17 +154,15 @@ struct
       end
     (* On vérifie si l'affectation est possible, ie. le type retournée par l'expression
     correspond au type de la variable dans laquelle on l'affecte *)
-    (*
-    | AstTds.Affectation(e, info_ast) ->
+    | AstTds.Affectation (a, e) ->
+      let (na, ta) = analyse_affectable a in
+      let (ne, te) = analyse_expression e in
       begin
-        let (ne, te) = analyse_expression e in
-        let t = getType info_ast in
-          if est_compatible te t then
-            Affectation(ne, info_ast)
-          else
-            raise (TypeInattendu (te, t))
+      if est_compatible ta te then
+        (Affectation(na, ne))
+      else
+        raise (TypeInattendu (te, ta))
       end
-    *)
     (* On retourne des affichages plus spécifiques à chaque types *)
     | AstTds.Affichage(e) ->
       begin
@@ -172,6 +173,8 @@ struct
           | Bool -> AffichageBool(ne)
           | Str -> AffichageStr(ne)
           | Undefined ->
+            raise (ErreurInterne)
+          | Pointeur(_) ->
             raise (ErreurInterne)
       end
     (* On analyse les deux blocs de la condition et l'expression *)

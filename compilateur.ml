@@ -94,11 +94,7 @@ let report_error filename lexbuf msg =
   let filebuf = Lexing.from_channel input in
   try
     let ast = Parser.main Lexer.token filebuf in
-    let s = CompilateurRat.analyser ast in 
-    let fich = open_out "output.tam" in
-    output_string fich s;
-    close_out fich;
-    s
+    CompilateurRat.analyser ast
   with
   | Lexer.Error _ as e ->
       report_error ratfile filebuf "lexical error (unexpected character).";

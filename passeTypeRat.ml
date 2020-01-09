@@ -181,8 +181,7 @@ struct
           | Str -> AffichageStr(ne)
           | Undefined ->
             raise (ErreurInterne)
-          | Pointeur(_) ->
-            raise (ErreurInterne)
+          | Pointeur(_) -> AffichageInt(ne)
       end
     (* On analyse les deux blocs de la condition et l'expression *)
     | AstTds.Conditionnelle(e, bt, be) ->

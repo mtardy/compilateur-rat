@@ -3,3 +3,4 @@ node_modules/
 .merlin
 FichierOutput.tam
 rapport/
+.DS_Store

@@ -180,26 +180,28 @@ let rec analyse_expression e =
       ^"CALL (SB) SOut\n"
 
   and analyse_bloc li =
-    let tailleToPop = (taille_li li) in
     (List.fold_right (fun elem myString -> (analyse_instruction elem)^myString) li "")
-    ^(
-    (* POP les déclarations locales du bloc *)
-    if (tailleToPop > 0) then
-      "POP (0) "^(string_of_int tailleToPop)^"\n"
-    (* Ne pas inscrire l'instruction inutile "POP (0) 0" *)
-    else
-      ""
-    )
+    (* Inutile de POP les déclarations locales du bloc main car la fin du bloc main signifie 
+    la fin du programme *)
 
   let analyse_fonction f =
     match f with
     | AstPlacement.Prototype -> ""
     | Ast.AstPlacement.Fonction(info_ast, linfo_ast, li, e) ->
+      let tailleToPop = (taille_li li) in
       getFunNom info_ast^"\n"
       ^(analyse_bloc li)
       ^(analyse_expression e)
       ^(let tailleRetour = getTaille (getType info_ast) in
-        "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n\n")
+        "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n")
+      ^(
+      (* POP les déclarations locales du bloc d'une fonction *)
+      if (tailleToPop > 0) then
+        "POP (0) "^(string_of_int tailleToPop)^"\n\n"
+      (* Ne pas inscrire l'instruction inutile "POP (0) 0" *)
+      else
+        "\n"
+      )
 
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in

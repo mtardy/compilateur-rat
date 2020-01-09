@@ -130,3 +130,15 @@ let%expect_test "factfuns" =
 let%expect_test "factrec" =
   runtam "../../fichiersRat/src-rat-tam-test/factrec.rat";
   [%expect{| 120 |}]
+
+(* Tests strings *)
+
+let%expect_test "testMix" =
+  runtam "../../fichiersRat/test-strings/testMix.rat";
+  [%expect{| aebfcgdh |}]
+
+(* Tests pointeurs *)
+
+let%expect_test "testPointeurs1" =
+  runtam "../../fichiersRat/test-pointeurs/tam/testPointeurs1.rat";
+  [%expect{| 3 |}]

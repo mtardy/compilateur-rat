@@ -21,7 +21,18 @@ let analyse_affectable a instruction =
     match a with
     | Ident(info_ast) ->
       let typ = getType info_ast in
-      (typ, instruction ^ " (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
+      begin
+      match typ with
+      (* Si on est en train d'affecter un pointeur, il faut LOAD son adresse afin
+      de faire un STOREI à son adresse dans le tas *)
+      (* C'est-à-dire que pour un pointeur, en écriture comme en lecture, il faut load
+      son adresse du tas pour faire ensuite l'opération appropriée *)
+      | Pointeur(t) ->
+        (typ, "LOAD"^" (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
+      (* S'il ne s'agit pas d'un pointeur, on veut juste LOAD ou STORE à l'adresse dans la pile *)
+      | _ ->
+        (typ, instruction^" (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
+      end
     | Valeur(a) ->
       let typ, s = (aux a) in
       match typ with
@@ -190,7 +201,7 @@ let rec analyse_expression e =
       ^(analyse_bloc li)
       ^(analyse_expression e)
       ^(let tailleRetour = getTaille (getType info_ast) in
-        "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n")
+        "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n\n")
 
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in
@@ -200,7 +211,7 @@ let rec analyse_expression e =
     ^(List.fold_right (fun elem myString -> elem^myString) nfonctions "")
     ^"\nmain\n"
     ^nbloc
-    ^"HALT\n" in
+    ^"HALT" in
     Code.ecrireFichier "FichierOutput.tam" code;
     code
 end

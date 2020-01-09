@@ -1,0 +1,12 @@
+
+int g (int k){
+    return k;
+}
+
+rat g (int a) {
+    return a;
+}
+
+test {
+    print [1/2];
+}

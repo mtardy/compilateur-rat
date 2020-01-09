@@ -1,1 +1,13 @@
 
+int g (int k){
+    return k;
+}
+
+rat g (rat a) {
+    return a;
+}
+
+test {
+    print call g ([1/2]);
+    print call g (6);
+}

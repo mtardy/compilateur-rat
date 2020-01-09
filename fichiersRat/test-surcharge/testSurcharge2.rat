@@ -1,0 +1,12 @@
+int fer (int a) {
+    return a;
+}
+
+int fer (rat a) {
+    return denom a;
+}
+
+test {
+    print call fer (8);
+    print call fer ([2/3]);
+}

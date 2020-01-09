@@ -63,13 +63,9 @@ open Ast.AstSyntax
 
 main : lfi = prog EOF     {lfi}
 
-(*prog :
-| lf = fonc  lfi = prog   {let (Programme (lf1,li))=lfi in (Programme (lf::lf1,li))}
-| ID li = bloc            {Programme ([],li)}
-*)
-
+(* On analyse un programme en séparant la partie avant le bloc main et la partie après*)
 prog :
-| f1 = dfs ID li = bloc f2 = dfs   {Programme (f1,li,f2)}
+| lf1 = dfs ID li = bloc lf2 = dfs   {Programme (lf1,li,lf2)}
 
 (* Une suite de fonctions et de prototypes *)
 dfs :

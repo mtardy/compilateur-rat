@@ -1,0 +1,10 @@
+int modif (int * y) {
+    (*y) = 2;
+    return 0;
+}
+
+test {
+    int a = 5;
+    int inutile = call modif (&a);
+    print a;
+}

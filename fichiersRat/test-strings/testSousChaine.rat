@@ -1,0 +1,5 @@
+test{
+    string a = "test";
+    string b = (a{1,2});
+    print b;
+}

@@ -1,0 +1,7 @@
+int biz (string a string b) {
+    return (length a + length b);
+}
+
+test{
+    print call biz ("bonjour" "france");
+}

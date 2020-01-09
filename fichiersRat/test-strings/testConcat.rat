@@ -1,0 +1,6 @@
+test{
+    string a = "test";
+    string b = " unitaire";
+    string t = (a^b);
+    print t;
+}

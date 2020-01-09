@@ -1,0 +1,4 @@
+test{
+    string a = "test";
+    a = 3;
+}

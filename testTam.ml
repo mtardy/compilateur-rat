@@ -132,13 +132,16 @@ let%expect_test "factrec" =
   [%expect{| 120 |}]
 
 (* Tests strings *)
-
 let%expect_test "testMix" =
   runtam "../../fichiersRat/test-strings/testMix.rat";
   [%expect{| aebfcgdh |}]
 
 (* Tests pointeurs *)
-
 let%expect_test "testPointeurs1" =
   runtam "../../fichiersRat/test-pointeurs/tam/testPointeurs1.rat";
   [%expect{| 3 |}]
+
+(* Test combinaison du sujet du projet *)
+let%expect_test "testSujetProjet" =
+  runtam "../../fichiersRat/testSujetProjet.rat";
+  [%expect{| aebfcgdh |}]

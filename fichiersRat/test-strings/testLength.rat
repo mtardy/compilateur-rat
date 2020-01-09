@@ -1,0 +1,5 @@
+test{
+    string a = "unitaire";
+    int b = length a;
+    print b;
+}

@@ -16,29 +16,27 @@ struct
 (* Paramètre instruction : l'instruction STORE ou LOAD en fonction de si l'on veut
 respectivement faire une ecriture ou une lecture d'un affectable *)
 (* Génère le code d'un affectable *)
+(* Cette fonction est complexe car elle factorise le comportement en lecture
+et en écriture des affectables *)
 let analyse_affectable a instruction =
-  let rec aux a =
+  (* La fonction auxiliaire permet uniquement de renvoyer une string au lieu d'un couple *)
+  let rec aux a instruction =
     match a with
-    | Ident(info_ast) ->
-      let typ = getType info_ast in
-      begin
-      match typ with
-      (* Si on est en train d'affecter un pointeur, il faut LOAD son adresse afin
-      de faire un STOREI à son adresse dans le tas *)
-      (* C'est-à-dire que pour un pointeur, en écriture comme en lecture, il faut load
-      son adresse du tas pour faire ensuite l'opération appropriée *)
-      | Pointeur(t) ->
-        (typ, "LOAD"^" (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
-      (* S'il ne s'agit pas d'un pointeur, on veut juste LOAD ou STORE à l'adresse dans la pile *)
-      | _ ->
+      | Ident(info_ast) ->
+        let typ = getType info_ast in
+        (* Si on a affaire à un identifiant classique, qu'il s'agisse d'un pointeur
+        ou non, on veut faire un LOAD ou un STORE en fonction de lecture ou écriture *)
         (typ, instruction^" (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
-      end
-    | Valeur(a) ->
-      let typ, s = (aux a) in
-      match typ with
-      | Pointeur(ntyp) -> (ntyp, s^instruction^"I ("^(string_of_int( getTaille (ntyp)))^")\n")
-      | _ -> raise (ErreurInterne)
-  in snd (aux a)
+      | Valeur(a) ->
+        (* Si on a affaire à un pointeur accédé avec une étoile, on va nécessairement 
+        charger son adresse du tas dans la pile (avec un LOAD) pour poursuivre et 
+        faire une opération de STOREI pour une écriture ou un LOADI pour une lecture *)
+        let typ, s = (aux a "LOAD") in
+        match typ with
+        | Pointeur(ntyp) -> (ntyp, s^instruction^"I ("^(string_of_int( getTaille (ntyp)))^")\n")
+        | _ -> raise (ErreurInterne)
+  in snd (aux a instruction)
+
 
 (* On transforme une string en liste *)
 let explode s =

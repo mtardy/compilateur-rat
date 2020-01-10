@@ -1,0 +1,8 @@
+int f (int * p) {
+   return 0;
+}
+
+test {
+    int * a = (new int);
+    int inutile = call f (a);
+}

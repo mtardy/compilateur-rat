@@ -16,6 +16,10 @@ let rec est_compatible t1 t2 =
   | Int, Int -> true
   | Rat, Rat -> true
   | Str, Str -> true
+  (* Les deux cas ci-dessous sont ajoutés pour les pointeurs *)
+  (* Cela ne devrait pas poser de conflits particuliers *)
+  | Undefined, _ -> true
+  | _, Undefined -> true
   | Pointeur(typ1), Pointeur(typ2) -> (est_compatible typ1 typ2)
   | _ -> false
 

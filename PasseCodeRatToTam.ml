@@ -120,8 +120,7 @@ let rec analyse_expression e =
     "LOADL "^(string_of_int (getTaille typ))^"\n"
     ^"SUBR MAlloc\n"
   | Null ->
-    "LOADL 0\n"
-    ^"SUBR MAlloc\n"
+    "SUBR MVoid\n"
   | Acces(a) ->
     (analyse_affectable a "LOAD")
   | Adresse(info_ast) ->

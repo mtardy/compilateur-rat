@@ -3,6 +3,5 @@ main{
     int* p = &a;
     (*p) = 9;
     print a;
-    print " ";
     print (*p);
 }

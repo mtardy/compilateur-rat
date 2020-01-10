@@ -20,6 +20,7 @@ struct
       begin
       match (snd ana_aff) with
         | Pointeur(t) -> (Valeur(fst ana_aff), t)
+        (* Il a été décidé d'écrire qu'on attendait un pointeur sur t au lieu d'un t*)
         | t -> raise (TypeInattendu(t, Pointeur(t)))
       end
   

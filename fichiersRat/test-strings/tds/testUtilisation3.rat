@@ -1,0 +1,8 @@
+string add (string a string b){
+  return (a^b);
+ }
+
+test{
+  string s = "world of ";
+  string res = call add (s "warcraft");
+}

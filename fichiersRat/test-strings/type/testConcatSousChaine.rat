@@ -1,0 +1,5 @@
+test{
+  string s1 = "world of ";
+  string s2 = "warcraft";
+  string s = (s1^(s2{0,2}));
+}

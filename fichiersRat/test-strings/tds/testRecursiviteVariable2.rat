@@ -1,0 +1,5 @@
+test{
+  string s = "comment?";
+  s = (s^" pourquoi?");
+  s = ("pourquoi? "^s);
+}

@@ -1,0 +1,5 @@
+test{
+  string s1 = "world of ";
+  int n = 12;
+  string s = (s1^n);
+}

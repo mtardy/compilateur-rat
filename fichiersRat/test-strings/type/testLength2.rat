@@ -1,0 +1,4 @@
+test{
+  int n = 5;
+  bool res = (length n = 4);
+}

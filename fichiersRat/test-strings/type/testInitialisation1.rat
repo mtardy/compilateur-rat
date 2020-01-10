@@ -1,0 +1,3 @@
+test{
+  string s1 = "chaine";
+}

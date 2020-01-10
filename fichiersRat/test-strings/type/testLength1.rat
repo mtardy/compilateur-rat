@@ -1,0 +1,4 @@
+test{
+  string s = "cinq";
+  bool res = (length s = 4);
+}

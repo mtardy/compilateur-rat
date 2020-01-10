@@ -1,0 +1,8 @@
+test{
+  string s = "ok";
+  if (length s = 2){
+    s = "bon";
+  } else {
+    s = "bad";
+  } 
+}

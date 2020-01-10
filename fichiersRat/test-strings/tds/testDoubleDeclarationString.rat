@@ -1,0 +1,4 @@
+test {
+  string s = "ok";
+  string s = "not ok";
+}

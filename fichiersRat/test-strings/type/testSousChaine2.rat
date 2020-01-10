@@ -1,0 +1,4 @@
+test{
+  string s = "worldof";
+  string b = (s{[4/2],4});
+}

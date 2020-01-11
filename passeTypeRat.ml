@@ -11,6 +11,11 @@ struct
   type t1 = Ast.AstTds.programme
   type t2 = Ast.AstType.programme
 
+  (* analyse_affectable : AstTds.affectable -> AstType.affectable *)
+  (* Paramètre : l'affectable à analyser *)
+  (* Analyse un identifiant et récupère son info, pour une valeur,
+  vérification qu'il s'agit bien d'un pointeur *)
+  (* Erreur si mauvaise utilisation des types *)
   let rec analyse_affectable a =
     match a with
     | AstTds.Ident info_ast ->
@@ -20,10 +25,9 @@ struct
       begin
       match (snd ana_aff) with
         | Pointeur(t) -> (Valeur(fst ana_aff), t)
-        (* Il a été décidé d'écrire qu'on attendait un pointeur sur t au lieu d'un t*)
+        (* On suggère à l'utilisateur qu'on attendait un pointeur, "sûrement" sur t *)
         | t -> raise (TypeInattendu(t, Pointeur(t)))
       end
-  
 
   (* analyse_expression : Rat.Ast.AstTds.expression -> Rat.Ast.AstType.expression * Rat.Type.typ *)
   (* Paramètre e : l'expression à analyser *)
@@ -32,14 +36,16 @@ struct
   (* Erreur si l'utilisation des types est incorrect *)
   let rec analyse_expression e =
     match e with
-    (* On verifie que l'ont a bien une string et deux int *)
+    (* On vérifie que l'on a bien une string et deux int *)
     | AstTds.SousChaine(e,e1,e2) ->
       begin
         let (ne,te) = analyse_expression e in
         let (ne1,te1) = analyse_expression e1 in
         let (ne2,te2) = analyse_expression e2 in
+        (* Premièrement on vérifie qu'on tente de faire la sous chaîne d'une string *)
         if (est_compatible te Str) then
           begin
+          (* Ensuite on vérifie que les bornes sont des entiers *)
           if (est_compatible te1 Int && est_compatible te2 Int) then
             (SousChaine(ne,ne1,ne2), Str)
           else if (not (est_compatible te1 Int)) then
@@ -47,7 +53,7 @@ struct
           else
             raise (TypeInattendu (te2, Int))
           end
-        else 
+        else
           raise (TypeInattendu (te, Str))
       end
     | AstTds.True -> (True, Bool)
@@ -71,13 +77,13 @@ struct
         else
           raise (TypeInattendu (te, Rat))
       end
-      (* Verifie que l'on prend bien une string en argument *)
-    | AstTds.Taille(e) -> 
+    (* Verifie que l'on prend bien une string en argument *)
+    | AstTds.Taille(e) ->
       let (ne,te) = analyse_expression e in
-      begin 
+      begin
       if (est_compatible te Str) then
         (Taille(ne), Int)
-      else 
+      else
         raise (TypeInattendu (te, Str))
       end
     (* Vérifie que le type est bien construit à partir de deux entiers *)
@@ -90,22 +96,19 @@ struct
         (* Permet de cibler l'exception sur le bon argument *)
         else if not (est_compatible te1 Int) then
           raise (TypeInattendu (te1, Int))
-        else if not (est_compatible te2 Int) then
-          raise (TypeInattendu (te2, Int))
         else
-        (* Code mort si tout va bien *)
-          raise (ErreurInterne)
+          raise (TypeInattendu (te2, Int))
       end
     (* Vérifie que l'appel de la fonction se fait avec des paramètres de types corrects *)
     | AstTds.AppelFonction(infoFun_ast, le) ->
       begin
-      (* On recupere les type et info des arguments*)
+      (* On récupère les type et info des arguments *)
       let type_param = getTypeParam infoFun_ast in
-      (* On garde la liste des liste de type des parametre (surcharge) *)
+      (* On garde la liste des liste de type des paramètres (surcharge) *)
       let (lltyp,_) = List.split type_param in
       (* Analyse de l'expression *)
       let nle = List.map analyse_expression le in
-      (* On recupere la liste de type et la liste de nouvelle expr *)
+      (* On récupère la liste de type et la liste de nouvelle expr *)
       let (lnle, ltype) = List.split nle in
       (* On cherche une fonction avec la liste de type correspondant *)
       (* C'est ici que pose probleme la surcharge du type de retour :
@@ -113,7 +116,7 @@ struct
       match (est_compatible_fun ltype type_param) with
         (* On a trouvé une infoFun correspondante *)
         | Some info -> ((AppelFonction(info, lnle), getType info))
-        (* Pas de fonction declaré avec cette liste de type *)
+        (* Pas de fonction declarée avec cette liste de type *)
         | None -> raise (TypesParametresInattendus (ltype,lltyp))
       end
     (* Vérifie que l'opération binaire est possible *)
@@ -140,6 +143,7 @@ struct
     | AstTds.Acces(a) ->
       let (na, ta) = analyse_affectable a in
       (Acces(na), ta)
+    (* Undefined est donc compatible avec n'importe quel autre type *)
     | AstTds.Null -> (Null, Pointeur(Undefined))
 
   (* analyser_instruction : AstTds.instruction -> AstType.instruction *)
@@ -180,8 +184,7 @@ struct
           | Rat -> AffichageRat(ne)
           | Bool -> AffichageBool(ne)
           | Str -> AffichageStr(ne)
-          | Undefined ->
-            raise (ErreurInterne)
+          | Undefined -> raise (ErreurInterne)
           | Pointeur(_) -> AffichageInt(ne)
       end
     (* On analyse les deux blocs de la condition et l'expression *)
@@ -217,13 +220,13 @@ struct
     let nli = List.map analyse_instruction li in
     nli
 
-  (* analyser_fonction : AstTds.fonction -> AstType.fonction *)
+  (* analyse_fonction : AstTds.fonction -> AstType.fonction *)
   (* Paramètre : la fonction à analyser *)
   (* Ajoute dans l'info le type de la fonction et de ses paramètres,
   analyse ensuite le bon typage des instructions au sein de la fonction
   puis vérifie que le typage de l'expression retournée est cohérent *)
   (* Erreur si mauvaise utilisation des types *)
-  let analyse_fonction f = 
+  let analyse_fonction f =
     match f with
       |(AstTds.Fonction(typ, infoMultiFun_ast, infoListArgs, li, e)) ->
         begin
@@ -254,7 +257,7 @@ struct
             if est_compatible typ (getType info) then
               begin
               match (info_ast_to_info info) with
-              | InfoFun(n,t,lt,b) -> 
+              | InfoFun(n,t,lt,b) ->
                 (* Si b = false, la declaration est protoypé *)
                 if (not b) then
                   begin
@@ -273,7 +276,7 @@ struct
                 else
                   raise (DoubleDeclaration (getFunNom infoMultiFun_ast))
               | _ -> raise ErreurInterne
-              end  
+              end
             else
               (* Le type de retour ne correspond pas à la declaration précédente *)
               raise (SurchargeTypeRetour (List.hd (String.split_on_char '#' (getFunNom info))))
@@ -290,7 +293,7 @@ struct
             let _ = ajouterTypeParamFun ltyp infoMultiFun typ false in
             (* Nous n'avons plus besoin d'information du Prototype après *)
             Prototype(infoMultiFun, ltyp)
-          | Some info -> 
+          | Some info ->
           (* On regarde si le type de retour correspond à la déclaration précédente *)
           if est_compatible typ (getType info) then
             (* On a deja declaré la fonction avant -> proto inutile ou double proto *)
@@ -300,7 +303,6 @@ struct
             surcharge du type de retour *)
             raise (SurchargeTypeRetour (List.hd (String.split_on_char '#' (getFunNom info))))
         end
-          
 
   (* analyser : AstTds.ast -> AstType.ast *)
   (* Paramètre : le programme à analyser *)
@@ -311,7 +313,7 @@ struct
     let nbloc = analyse_bloc bloc in
     let nfonctions2 = List.map analyse_fonction fonctions2 in
     (* À partir de cette passe, il n'est plus nécessaire de faire une distinction entre
-    le code situé avant et après le bloc principal, on les concatene *)
+    le code situé avant et après le bloc principal, on les concatène *)
     Programme(nfonctions1@nfonctions2, nbloc)
 
 end

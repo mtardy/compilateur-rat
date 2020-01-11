@@ -1,0 +1,12 @@
+int f (int a) {
+    return a;
+}
+
+int f (int b) {
+    return b;
+}
+
+test {
+    print call f (2);
+    print call f (4);
+}

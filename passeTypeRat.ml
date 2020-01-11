@@ -272,7 +272,7 @@ struct
                 (* Sinon, double declaration *)
                 else
                   raise (DoubleDeclaration (getFunNom infoMultiFun_ast))
-              | _ -> failwith "ErreurInterne"
+              | _ -> raise ErreurInterne
               end  
             else
               (* Le type de retour ne correspond pas à la declaration précédente *)

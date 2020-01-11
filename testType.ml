@@ -522,3 +522,9 @@ let _ = compiler   "../../fichiersRat/src-rat-tam-test/testfuns.rat" in ()
 
 let%test_unit "code_complique" = 
 let _ = compiler   "../../fichiersRat/src-rat-tam-test/complique.rat" in ()
+
+let%test_unit "equalBool1" = 
+  let _ = compiler   "../../fichiersRat/src-rat-tam-test/testEqualBool1.rat" in ()
+
+let%test_unit "equalBool2" = 
+  let _ = compiler   "../../fichiersRat/src-rat-tam-test/testEqualBool2.rat" in ()

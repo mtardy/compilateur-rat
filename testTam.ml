@@ -102,6 +102,15 @@ let%expect_test "factrec" =
   runtam "../../fichiersRat/src-rat-tam-test/factrec.rat";
   [%expect{| 120 |}]
 
+(* Tests ajoutés *)
+let%expect_test "EqualBool1" =
+  runtam "../../fichiersRat/src-rat-tam-test/testEqualBool1.rat";
+  [%expect{| true |}]
+
+let%expect_test "EqualBool2" =
+  runtam "../../fichiersRat/src-rat-tam-test/testEqualBool2.rat";
+  [%expect{| true |}]
+
 (* Test combinaison du sujet du projet *)
 let%expect_test "testSujetProjet" =
   runtam "../../fichiersRat/testSujetProjet.rat";

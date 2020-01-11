@@ -1,0 +1,7 @@
+int addlength (string a string b) {
+    return (length a + length b);
+}
+
+test{
+    print call addlength ("bonjour" "france");
+}

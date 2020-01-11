@@ -1,5 +1,0 @@
-test {
-    int * p = null;
-    int a = 12;
-    p = &a;
-}

@@ -3,28 +3,6 @@ open Exceptions
 
 exception ErreurNonDetectee
 
-let%test_unit "testString1"= 
-  let _ = compiler "../../fichiersRat/test-strings/testString1.rat" in ()
-
-let%test_unit "testString2"= 
-  try
-  let _ = compiler "../../fichiersRat/test-strings/testString2.rat"
-  in  raise ErreurNonDetectee
-  with
-  | TypeInattendu(Int, Str) -> ()
-
-let%test_unit "testSousChaine"= 
-  let _ = compiler "../../fichiersRat/test-strings/testSousChaine.rat" in ()
-
-let%test_unit "testConcat"= 
-  let _ = compiler "../../fichiersRat/test-strings/testConcat.rat" in ()
-
-let%test_unit "testLength"= 
-  let _ = compiler "../../fichiersRat/test-strings/testLength.rat" in ()
-
-let%test_unit "testMix"= 
-  let _ = compiler "../../fichiersRat/test-strings/testMix.rat" in ()
-
 (* Passe de Tds *)
 let%test_unit "testAffectation1"=
   let _ = compiler "../../fichiersRat/test-strings/tds/testAffectation1.rat" in ()
@@ -67,6 +45,7 @@ let%test_unit "testUtilisation5"=
   in raise ErreurNonDetectee
   with
   | IdentifiantNonDeclare "d" -> ()
+
 
 (* Passe de Type *)
 let%test_unit "testConcat1"=
@@ -118,3 +97,36 @@ let%test_unit "testInitialisation3"=
   in raise ErreurNonDetectee
   with
   | TypeInattendu (Str, Int) -> ()
+
+let%test_unit "testAffectation1"=
+  try
+  let _ = compiler "../../fichiersRat/test-strings/type/testAffectation1.rat"
+  in raise ErreurNonDetectee
+  with
+  | TypeInattendu (Int, Str) -> ()
+
+
+(* Tests passe de génération de code *)
+let%expect_test "testMix" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testMix.rat";
+  [%expect{| aebfcgdh |}]
+
+let%expect_test "testConcat" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testConcat.rat";
+  [%expect{| test unitaire |}]
+
+let%expect_test "testLength" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testLength.rat";
+  [%expect{| 8 |}]
+
+let%expect_test "testLengthFonc" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testLengthFonc.rat";
+  [%expect{| 13 |}]
+
+let%expect_test "testSousChaine" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testSousChaine.rat";
+  [%expect{| es |}]
+
+let%expect_test "testString1" =
+  TestTam.runtam "../../fichiersRat/test-strings/tam/testString1.rat";
+  [%expect{| test |}]

@@ -102,11 +102,6 @@ let%expect_test "factrec" =
   runtam "../../fichiersRat/src-rat-tam-test/factrec.rat";
   [%expect{| 120 |}]
 
-(* Tests strings *)
-let%expect_test "testMix" =
-  runtam "../../fichiersRat/test-strings/testMix.rat";
-  [%expect{| aebfcgdh |}]
-
 (* Test combinaison du sujet du projet *)
 let%expect_test "testSujetProjet" =
   runtam "../../fichiersRat/testSujetProjet.rat";

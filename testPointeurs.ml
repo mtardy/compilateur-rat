@@ -17,6 +17,7 @@ let%test_unit "testPointeursTds2"=
 let%test_unit "testPointeursTds3"= 
   let _ = compiler "../../fichiersRat/test-pointeurs/tds/testPointeursTds3.rat" in ()
 
+
 (* Tests passe Typage *)
 let%test_unit "testPointeursType1"=
   let _ = compiler "../../fichiersRat/test-pointeurs/type/testPointeursType1.rat" in ()
@@ -78,12 +79,24 @@ let%test_unit "testPointeursType12"=
   with
   | TypeInattendu (Rat, Int) -> ()
 
-(* Test passe génération de code *)
 
+(* Test passe génération de code *)
 let%expect_test "testTamPointeurs1" =
-  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testTamPointeurs1.rat";
+  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testPointeursTam1.rat";
   [%expect{| 3 |}]
 
 let%expect_test "testTamPointeurs2" =
-  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testTamPointeurs2.rat";
+  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testPointeursTam2.rat";
   [%expect{| 99 |}]
+
+let%expect_test "testPassageAdresse" =
+  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testPassageAdresse.rat";
+  [%expect{| 2 |}]
+
+let%expect_test "testPointeurNull" =
+  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testPointeurNull.rat";
+  [%expect{| 12 |}]
+
+let%expect_test "testPointeurDouble" =
+  TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testPointeurDouble.rat";
+  [%expect{| 5 |}]

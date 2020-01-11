@@ -10,6 +10,14 @@ struct
   type t1 = Ast.AstSyntax.programme
   type t2 = Ast.AstTds.programme
 
+(* analyse_tds_affectable_lecture : AstSyntax.affectable -> tds -> AstTds.affectable *)
+(* Paramètre tds : la table des symboles courante *)
+(* Paramètre a : l'affectable à analyser *)
+(* Vérifie la bonne utilisation des identifiants et transforme l'affectable
+en un affectable de type AstTds.affectable *)
+(* Erreur si mauvaise utilisation des identifiants *)
+(* Cette fonction permet aussi de transformer les identifiants des constantes en leur valeur
+à la fin de la passe (voir suite du code dans analyse_tds_expression pour les Accès) *)
 let rec analyse_tds_affectable_lecture tds a =
   match a with
   | AstSyntax.Ident (id) ->
@@ -33,7 +41,12 @@ let rec analyse_tds_affectable_lecture tds a =
     | AstSyntax.Valeur aff ->
       Valeur(analyse_tds_affectable_lecture tds aff)
 
-
+(* analyse_tds_affectable_ecriture : AstSyntax.affectable -> tds -> AstTds.affectable *)
+(* Paramètre tds : la table des symboles courante *)
+(* Paramètre a : l'affectable à analyser *)
+(* Vérifie la bonne utilisation des identifiants et transforme l'affectable
+en un affectable de type AstTds.affectable *)
+(* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_affectable_ecriture tds a =
   match a with
   | AstSyntax.Ident (n) ->
@@ -57,11 +70,10 @@ let rec analyse_tds_affectable_ecriture tds a =
   | AstSyntax.Valeur (aff) ->
     Valeur(analyse_tds_affectable_ecriture tds aff)
 
-
 (* analyse_tds_expression : AstSyntax.expression -> AstTds.expression *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre e : l'expression à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme l'expression
+(* Vérifie la bonne utilisation des identifiants et transforme l'expression
 en une expression de type AstTds.expression *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_expression tds e =
@@ -116,6 +128,8 @@ let rec analyse_tds_expression tds e =
       Binaire(op, expr1Tds, expr2Tds)
   | AstSyntax.New (typ) ->
     New(typ)
+  (* On analyse les identifiants des accès *)
+  (* On remplace les identifiants des constantes par leur valeur *)
   | AstSyntax.Acces (a) ->
     let na = analyse_tds_affectable_lecture tds a in
     begin
@@ -129,6 +143,7 @@ let rec analyse_tds_expression tds e =
       end
     | Valeur(_) -> Acces(na)
     end
+  (* On cherche si l'identifiant dont on veut l'adresse existe *)
   | AstSyntax.Adresse (n) ->
     begin
     match chercherGlobalement tds n with
@@ -140,11 +155,10 @@ let rec analyse_tds_expression tds e =
   | AstSyntax.Null ->
     Null
 
-
 (* analyse_tds_instruction : AstSyntax.instruction -> tds -> AstTds.instruction *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre i : l'instruction à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme l'instruction
+(* Vérifie la bonne utilisation des identifiants et transforme l'instruction
 en une instruction de type AstTds.instruction *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let rec analyse_tds_instruction tds i =
@@ -216,11 +230,10 @@ let rec analyse_tds_instruction tds i =
       (* Renvoie la nouvelle structure de la boucle *)
       TantQue (nc, bast)
 
-
 (* analyse_tds_bloc : AstSyntax.bloc -> AstTds.bloc *)
 (* Paramètre tds : la table des symboles courante *)
 (* Paramètre li : liste d'instructions à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme le bloc
+(* Vérifie la bonne utilisation des identifiants et transforme le bloc
 en un bloc de type AstTds.bloc *)
 (* Erreur si mauvaise utilisation des identifiants *)
 and analyse_tds_bloc tds li =
@@ -252,10 +265,10 @@ let rec analyse_args_function tds (typ,nom) =
 (* Paramètre infoFun_ast : le pointeur vers l'info de la fonction *)
 (* Ajoute l'identifiant de la fonction à la TDS. Cette fonction ne fait que de l'effet de bord *)
 (* Erreur si l'identifiant de la fonction a déjà été déclaré *)
-let ajouter_identifiant_fonction tds nom = 
+let ajouter_identifiant_fonction tds nom =
   (* On cherche si la fonction est deja declaré *)
   match chercherGlobalement tds nom with
-    | None -> 
+    | None ->
       (* Si ce n'est pas le cas, on creer une infoMultiFun avec le nom *)
       (* On remplira cette infoMultiFun lors de la phase de typage avec les différentes fonctions surchargées *)
       let infoMultiFun = InfoMultiFun(nom, []) in
@@ -267,13 +280,12 @@ let ajouter_identifiant_fonction tds nom =
       begin
       (* Dans la structure actuelle il ne peut y avoir que des fonction dans *)
       (* le corps du programme on s'en assure donc en plus ici *)
-      match (Tds.info_ast_to_info info) with 
+      match (Tds.info_ast_to_info info) with
         (* Le nom est deja pris par une fonction -> On a affaire à une surcharge *)
         | InfoMultiFun(_,_) -> info
         (* Que des fonctions dans le corps *)
         | _ -> raise (ErreurInterne)
       end
-      
 
 (* analyse_tds_fonction : AstSyntax.fonction -> AstTds.fonction *)
 (* Paramètre tds : la table des symboles courante *)
@@ -306,7 +318,7 @@ let analyse_tds_fonction maintds fonction =
 
 (* analyser : AstSyntax.ast -> AstTds.ast *)
 (* Paramètre : le programme à analyser *)
-(* Vérifie la bonne utilisation des identifiants et tranforme le programme
+(* Vérifie la bonne utilisation des identifiants et transforme le programme
 en un programme de type AstTds.ast *)
 (* Erreur si mauvaise utilisation des identifiants *)
 let analyser (AstSyntax.Programme(fonctions1, prog, fonctions2)) =

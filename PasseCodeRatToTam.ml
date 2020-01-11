@@ -12,6 +12,7 @@ struct
   type t1 = Ast.AstPlacement.programme
   type t2 = string
 
+(* analyse_affectable : AstPlacement.affectable -> string *)
 (* Paramètre a : l'affectable dont on veut générer le code *)
 (* Paramètre instruction : l'instruction STORE ou LOAD en fonction de si l'on veut
 respectivement faire une ecriture ou une lecture d'un affectable *)
@@ -28,8 +29,8 @@ let analyse_affectable a instruction =
         ou non, on veut faire un LOAD ou un STORE en fonction de lecture ou écriture *)
         (typ, instruction^" (" ^(string_of_int (getTaille (getType info_ast)))^") "^(string_of_int (getAddr info_ast))^"["^(getReg info_ast)^"]\n")
       | Valeur(a) ->
-        (* Si on a affaire à un pointeur accédé avec une étoile, on va nécessairement 
-        charger son adresse du tas dans la pile (avec un LOAD) pour poursuivre et 
+        (* Si on a affaire à un pointeur accédé avec une étoile, on va nécessairement
+        charger son adresse du tas dans la pile (avec un LOAD) pour poursuivre et
         faire une opération de STOREI pour une écriture ou un LOADI pour une lecture *)
         let typ, s = (aux a "LOAD") in
         match typ with
@@ -41,7 +42,7 @@ let analyse_affectable a instruction =
 (* On transforme une string en liste *)
 let explode s =
   let rec exp i l =
-    if i < 0 then l 
+    if i < 0 then l
     else exp (i - 1) ((Char.escaped s.[i]) :: l) in
   exp (String.length s - 1) [];;
 
@@ -58,7 +59,7 @@ let rec analyse_expression e =
   | True -> "LOADL 1\n"
   | False -> "LOADL 0\n"
   | Entier(i) -> "LOADL "^(string_of_int i)^"\n"
-  | Chaine(c) -> 
+  | Chaine(c) ->
       let l = (explode c) in
       (* Argument du MAlloc (taille du bloc) : len(chaine) + 1 (pour la taille) *)
       "LOADL "^(string_of_int ((List.length l)+1))^"\n"
@@ -107,22 +108,26 @@ let rec analyse_expression e =
         | MultInt -> "SUBR IMul\n"
         | MultRat -> "CALL (SB) RMul\n"
         | EquInt -> "SUBR IEq\n"
-        (* Attention ! Il faut vérifier 0 == 0*)
-        | EquBool -> "CALL (SB) BEq\n"
+        (* On traite les booléens comme des entiers *)
+        | EquBool -> "SUBR IEq\n"
         | Inf -> "SUBR ILss\n"
         | Concat -> "CALL (SB) SCat\n"
       end
     )
   | AppelFonction(info_ast, le) ->
+    (* Générer le code des expressions des paramètres *)
     List.fold_right (fun e q -> (analyse_expression e)^q) le ""
     ^"CALL (SB) "^(getFunNom info_ast)^"\n"
-  | New(typ) -> 
+  (* Faire un MAlloc de taille adéquate *)
+  | New(typ) ->
     "LOADL "^(string_of_int (getTaille typ))^"\n"
     ^"SUBR MAlloc\n"
   | Null ->
     "SUBR MVoid\n"
+  (* On analyse l'affectable en lecture *)
   | Acces(a) ->
     (analyse_affectable a "LOAD")
+  (* On charge l'adresse de l'info sur la pile *)
   | Adresse(info_ast) ->
     "LOADL "^(string_of_int (getAddr info_ast))^"\n"
 
@@ -130,8 +135,12 @@ let rec analyse_expression e =
     |Declaration(e,info) -> getTaille (getType info)
     |_ -> 0
 
+  (* Renvoie la taille utilisé par une liste d'instruction dans la pile *)
   let taille_li li = List.fold_left (fun result instruction -> (taille_i instruction) + result) 0 li
 
+  (* analyse_instruction : AstPlacement.instruction -> string *)
+  (* Paramètre i : l'instruction dont on veut générer le code *)
+  (* Analyse l'instruction et génère le code TAM correspondant *)
   let rec analyse_instruction i = match i with
     | Empty -> ""
     | Declaration(e,info) ->
@@ -148,10 +157,13 @@ let rec analyse_expression e =
       (* Génération de deux étiquettes *)
       let etiElse = getEtiquette () in
       let etiFinIf = getEtiquette () in
+      (* Condition *)
       (analyse_expression e)
+      (* Bloc if *)
       ^"JUMPIF (0) "^etiElse^"\n"
       ^(analyse_bloc bt)
       ^"JUMP "^etiFinIf^"\n"
+      (* Bloc else *)
       ^etiElse^"\n"
       ^(analyse_bloc be)
       ^etiFinIf^"\n"
@@ -160,7 +172,9 @@ let rec analyse_expression e =
       let debutTQ = getEtiquette () in
       let finTQ = getEtiquette () in
       debutTQ^"\n"
+      (* Condition *)
       ^(analyse_expression e)
+      (* Bloc du tant que *)
       ^"JUMPIF (0) "^finTQ^"\n"
       ^(analyse_bloc b)
       ^"JUMP "^debutTQ^"\n"
@@ -178,18 +192,27 @@ let rec analyse_expression e =
       (analyse_expression e)
       ^"CALL (SB) SOut\n"
 
+  (* analyse_bloc : AstPlacement.instruction -> string *)
+  (* Paramètre li : liste des instructions dont on veut générer le code *)
+  (* Analyse le bloc d'instructions et génère le code TAM correspondant *)
   and analyse_bloc li =
     (List.fold_right (fun elem myString -> (analyse_instruction elem)^myString) li "")
-    (* Inutile de POP les déclarations locales du bloc main car la fin du bloc main signifie 
+    (* Inutile de POP les déclarations locales du bloc main car la fin du bloc main signifie
     la fin du programme *)
 
+  (* analyse_fonction : AstPlacement.fonction -> string *)
+  (* Paramètre f : fonction dont on veut générer le code *)
+  (* Analyse la fonction et génère le code TAM correspondant *)
   let analyse_fonction f =
     match f with
+    (* Il n'y a pas de code correspondant au prototype *)
     | AstPlacement.Prototype -> ""
     | Ast.AstPlacement.Fonction(info_ast, linfo_ast, li, e) ->
       let tailleToPop = (taille_li li) in
       getFunNom info_ast^"\n"
+      (* bloc d'instructions de la fonction *)
       ^(analyse_bloc li)
+      (* expression de retour de la fonction *)
       ^(analyse_expression e)
       ^(let tailleRetour = getTaille (getType info_ast) in
         "RETURN ("^(string_of_int tailleRetour)^") "^(string_of_int (getTailleParam info_ast))^"\n")
@@ -202,6 +225,9 @@ let rec analyse_expression e =
         "\n"
       )
 
+  (* analyse : AstPlacement.Programme -> string *)
+  (* Paramètre : programme dont on veut générer le code *)
+  (* Analyse le programme et génère le code TAM correspondant *)
   let analyser (Ast.AstPlacement.Programme(fonctions, bloc)) =
     let nfonctions = List.map analyse_fonction fonctions in
     let nbloc = analyse_bloc bloc in

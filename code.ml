@@ -82,20 +82,6 @@ CALL (ST) norm
 POP (2) 4
 RETURN (2) 4\n\n"
 
-let beq =
-"BEq
-LOAD (1) -2[LB]
-LOAD (1) -1[LB]
-SUBR BNeg
-SUBR BAnd
-LOAD (1) -2[LB]
-SUBR BNeg
-LOAD (1) -1[LB]
-SUBR BAnd
-SUBR BOr
-SUBR BNeg
-RETURN (1) 2\n\n"
-
 
 let sout = 
   "SOut ; affiche une chaîne de caracteres dont l'adresse dans le tas est en -1[LB]
@@ -257,7 +243,6 @@ let getEntete () =
   ^rout
   ^radd
   ^rmul
-  ^beq
   ^sout
   ^scat
   ^ssub

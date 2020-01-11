@@ -108,7 +108,7 @@ let rec analyse_expression e =
         | MultRat -> "CALL (SB) RMul\n"
         | EquInt -> "SUBR IEq\n"
         (* Attention ! Il faut vérifier 0 == 0*)
-        | EquBool -> "SUBR BAnd\n"
+        | EquBool -> "CALL (SB) BEq\n"
         | Inf -> "SUBR ILss\n"
         | Concat -> "CALL (SB) SCat\n"
       end

@@ -1,4 +1,0 @@
-test {
-    int * p = (new int);
-    print p;
-}

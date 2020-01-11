@@ -1,0 +1,7 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{k+kt}{int} \PYG{n+nf}{f}\PYG{p}{();}
+\PYG{k+kt}{string} \PYG{n+nf}{f}\PYG{p}{();}
+\PYG{k+kt}{int} \PYG{n+nf}{g}\PYG{p}{(}\PYG{k+kt}{int} \PYG{n}{a} \PYG{k+kt}{int} \PYG{n}{b}\PYG{p}{);}
+\PYG{k+kt}{int} \PYG{n+nf}{g}\PYG{p}{(}\PYG{k+kt}{string} \PYG{n}{a} \PYG{k+kt}{string} \PYG{n}{b}\PYG{p}{);}
+\PYG{k+kt}{int} \PYG{n}{i} \PYG{p}{=} \PYG{n}{g}\PYG{p}{(}\PYG{n}{f}\PYG{p}{(),} \PYG{n}{f}\PYG{p}{());} \PYG{c+c1}{// Comment choisir le type de retour de f}
+\end{Verbatim}

@@ -1,0 +1,207 @@
+\documentclass[11pt,a4paper]{article}
+
+% Pour les standards français et gérer les accents
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Les marges
+\usepackage[a4paper,top=3cm,bottom=3cm]{geometry}
+
+% Pour les URLs
+\usepackage[hidelinks]{hyperref}
+
+% Pour gérer les illustrations
+\usepackage{graphicx}
+\graphicspath{{illustrations/}}
+% Pour pouvoir désactiver le caractère flottant avec H
+\usepackage{float}
+% Pour les doubles illustrations
+\usepackage{caption}
+\usepackage{subcaption}
+% Pour lister les sous figures dans la table des figures
+\usepackage[list=true,listformat=simple]{subcaption}
+
+% Pour gérer les maths
+\usepackage{amsmath,amsfonts,amssymb}
+
+\DeclareMathOperator{\sinc}{sinc}
+% Pour systématiquement gérer la position des indices dans les symboles de somme et produit
+\makeatletter
+\renewcommand{\slimits@}{\limits}
+
+% Autoriser avec un niveau de désidérabilité 1/4 de couper les affichages
+\allowdisplaybreaks[1]
+
+% Virer les indentations de début de paragraphe
+%\setlength{\parindent}{0pt}
+
+% Définition d'une nouvelle commande pour afficher les figures
+\newcommand\fig[2]{% these comment signs will prevent the introduction of spurious spaces
+  \begin{figure}[H]
+  	\includegraphics[width=0.8\linewidth]{#1}
+  	\centering
+  	\caption{#2}
+  	\label{fig:#2}
+  \end{figure}%
+}
+
+\newcommand\figlarge[2]{% these comment signs will prevent the introduction of spurious spaces
+  \begin{figure}[H]
+  	\includegraphics[width=\linewidth]{#1}
+  	\centering
+  	\caption{#2}
+  	\label{fig:#2}
+  \end{figure}%
+}
+
+\newcommand\doublefig[5]{%
+\begin{figure}[H]
+\centering
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{#1}
+  \caption{#2}
+  \label{fig:#2}
+\end{subfigure}%
+\begin{subfigure}{.5\textwidth}
+  \centering
+  \includegraphics[width=\linewidth]{#3}
+  \caption{#4}
+  \label{fig:#4}
+\end{subfigure}
+\caption{#5}
+\label{fig:#5}
+\end{figure}%
+}
+
+% Pour les listings
+\usepackage{minted}
+
+% Espace entre les paragraphes
+\setlength{\parskip}{0.5em}
+
+
+\title{\vspace{-1cm}\includegraphics[width=7cm]{n7.png}\\ Projet de programmation fonctionnelle et \\de traduction des langages\\ Compilateur du langage RAT étendu}
+\author{Louis \bsc{Blenner}, Mahé \bsc{Tardy}}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+Dans ce rapport nous allons voir comment ont été ajoutées les extensions du langage RAT au compilateur écrit en OCaml durant les séances de TPs. Seront abordés les choix de conception, leurs limites et avantages, et enfin les possibilités d'évolution plus ou moins complexe du compilateur.
+
+\section{Types}
+\section{Extension du langage RAT}
+\subsection{Les chaînes de caractères}
+
+L'intégration des chaînes de caractères ne présente pas de difficultés particulières à la passe de TDS. Lors de la passe de typage, il faut bien valider les jugements de typages indiqués ci-dessous et également résoudre une nouvelle opération binaire : la concaténation de deux chaînes de caractères. La passe de placement est inchangé. Cependant la passe de génération de code est complexe, nous avons choisi de garder la proposition du sujet concernant la structure des chaînes de caractères dans le tas: longueur de la chaîne suivi d'un tableau de caractères\footnote{On notera que cette structure justifie l'ajout du mot clé \texttt{length} dans le langage, car on peut récupérer la taille d'une string de manière très efficace.}. Il faut alors réaliser plusieurs opération lorsqu'on fait face à une expression de type chaîne de caractères: charger sa taille + 1 dans la pile pour allouer l'espace dans le tas puis charger chaque caractère et la taille dans la pile pour aller les stocker à l'adresse indiquée lors de l'allocation. Ainsi à la fin de l'opération, on obtient l'adresse pour retrouver la chaîne de caractères dans le tas en haut de pile.
+
+Pour l'expression sous-chaîne, on ne vérifie pas dans $E\{E_1,E_2\}$ que les entiers $E_1$ et $E_2$ ne dépassent pas la longueur de la chaîne - 1. Ainsi des erreurs au moment de l'exécution peuvent être due à des dépassements d'indices sur une chaîne de caractère.
+
+\subsubsection*{Jugements de typage}
+
+Voici ci-dessous les jugements de typages; pour une expression de type chaîne voir le jugement \ref{jugChaine}, pour une expression de concaténation de chaîne de caractères voir le jugement \ref{jugConcat}, pour une expression de sous-chaîne voir le jugement \ref{jugSousChaine} et pour une expression de taille d'une chaîne de caracatères voir le jugement \ref{jugTaille}.
+
+\begin{equation}
+	\label{jugChaine}
+	\sigma \vdash s : string 
+\end{equation}
+
+\begin{equation}
+	\label{jugConcat}
+	\frac{\sigma \vdash E_1 : string \quad \sigma \vdash E_2 : string}{\sigma \vdash (E_1 {}^\wedge E_2) : string}
+\end{equation}
+
+\begin{equation}
+	\label{jugSousChaine}
+	\frac{\sigma \vdash E : string \quad \sigma \vdash E_1 : int \quad \sigma \vdash E_2 : int}{\sigma \vdash (E\{E_1, E_2\}) : string}
+\end{equation}
+
+\begin{equation}
+	\label{jugTaille}
+	\frac{\sigma \vdash E : string}{\sigma \vdash length ~ E : int}
+\end{equation}
+
+\subsection{Les pointeurs}
+
+L'intégration des pointeurs ne sera pas détaillée ici car elle a été traitée en TD. Il a été fait le choix de créer les affectables. Leur traitement doit être fait séparément dans le cas d'une lecture ou d'une écriture pour la passe de TDS. Néanmoins leur traitement a pu être factorisé dans la passe de typage de même que pour la passe de génération du code des affectable. Bien que réalisé dans une unique fonction, la génération est différente dans le cas d'une lecture ou d'une écriture, voir les commentaires associées pour plus d'information sur cette fonction.
+
+Le type \texttt{Pointeur of typ} a été ajouté et ainsi pour permettre la déclaration d'un pointeur sur \texttt{null}, le type \texttt{undefined} est compatible avec n'importe quel autre type.
+
+L'affichage des pointeurs, c'est-à-dire l'adresse vers lequel un pointeur pointe, a été fait très simplement dans notre projet en utilisant \texttt{AffichageInt()}. On pourrait l'améliorer en dédiant une fonction qui ferait la même chose en concaténant un caractère '\texttt{@}' au début de l'entier afin de bien discerner qu'il s'agit d'une adresse.
+
+\subsubsection*{Jugements de typage}
+
+Voici ci-dessous les jugements de typage; pour l'expression de l'adresse $null$ voir jugement \ref{jugNull}, pour l'expression d'accès à l'adresse d'un identifiant $\&id$ voir jugement \ref{jugAcces}, pour un affectable accédé en valeur $*a$ voir jugement \ref{jugValeur}, pour l'expression d'allocation de mémoire dans le tas $New$ voir jugement \ref{jugNew}.
+
+\begin{equation}
+	\label{jugNull}
+	\sigma \vdash null : Pointeur(Undefined)
+\end{equation}
+
+\begin{equation}
+	\label{jugAcces}
+	\frac{\sigma \vdash id : t}{\sigma \vdash \& id : Pointeur(t)}
+\end{equation}
+
+\begin{equation}
+	\label{jugValeur}
+	\frac{\sigma \vdash a : Pointeur(t)}{\sigma \vdash *a : t}
+\end{equation}
+
+\begin{equation}
+	\label{jugNew}
+	\frac{\sigma \vdash t : \tau}{\sigma \vdash new \  t : Pointeur(\tau)}
+\end{equation}
+
+\subsection{La surcharge de fonctions}
+
+Afin de traiter la surcharge, nous avons décalé à la passe de typage la détection d'une double déclaration de fonction, en effet deux fonctions peuvent \emph{a priori} avoir le même identifiant. Nous avons créé un nouveau type, le type \texttt{multiFun} qui regroupe à la fin de la passe TDS l'ensemble des types d'arguments possible pour un nom de fonction. Ainsi, lors de la passe de typage, nous retournons une erreur de double déclaration s’il existe deux fonctions de même nom qui ont les mêmes types de paramètres. 
+
+Nous n'acceptons pas la surcharge sur le type de retour dans ce cas-là, car cela signifierait faire des modifications au niveau des appels de fonctions, en effet un appel aurait donc plusieurs types possibles. Néanmoins, il serait possible de l'implémenter en faisant remonter une liste de types possibles aux expressions et en définissant des comportements par défaut dans les cas indécis. La difficulté réside alors dans le choix raisonnable des ces comportements par défaut, pour ne pas arriver, par exemple, à des situations comme en Javascript où l'expression \texttt{'1'+1} est évaluée en \texttt{'11'} et l'expression \texttt{'1'-1} en \texttt{0}.
+
+\begin{minted}[frame=single,label=Exemple de cas indécidable]{csharp}
+int f();
+string f();
+int g(int a int b);
+int g(string a string b); 
+int i = g(f(), f()); // Comment choisir le type de retour de f
+\end{minted}Nous acceptons néanmoins la surcharge de type de retour du moment que les types des paramètres sont différents puisqu'ils permettent alors de caractériser une fonction particulière et donc un type de retour.Lors de la passe de typage, lorsque nous rencontrons une fonction, nous créons une \texttt{infoFun}, nous l'ajoutons ensuite à l'\texttt{infoMultiFun} pour pouvoir associer les différents appels à l'\texttt{infoFun} correspondante. Finalement, lors d'un appelle de fonction, nous parcourons l'\texttt{infoMultiFun} à la recherche d'une liste de types correspondant aux arguments pour lui associer l'\texttt{infoFun} couplé à la liste d'arguments. Si la liste d'arguments n'est pas trouvée, nous renvoyons une erreur type de paramètres inattendus.Pour créer une infoFun, il nous faut un nom de fonction qui permet d'y faire référence dans le code final, nous générons donc pour chaque fonction un nom de la forme \texttt{nom\#numéro}, où le numéro est incrémenté à chaque fonction rencontrée. Ainsi les noms internes de nos fonctions ne correspondent plus aux noms initiaux et sont difficilement prévisibles. C'est la raison pour laquelle il est compliqué de faire des tests sur le placement mémoire pour les fonctions dans notre situation. Cependant, lors de la levée d'erreur, les chaînes de caractères représentant les noms des fonctions sont découpées au niveau du caractère \texttt{\#} pour que les erreurs soient compréhensibles pour l'utilisateur. Il faudrait alors interdire l'utilisation du caractère \texttt{\#} dans les noms de fonctions du langage RAT.
+
+\subsection{Les prototypes}
+
+Les prototypes permettent de déclarer une fonction \emph{en avant} sans déclarer son corps. Cela est particulièrement utile dans le cadre d'une récursion mutuelle entre deux fonctions, impossible à écrire sinon.
+
+Leur intégration avec la surcharge (qui détermine désormais les doubles déclarations à la passe de typage) oblige à décaler certaines étapes. En effet, à la passe de TDS, l'analyse d'un prototype ajoute l'identifiant de la fonction à la TDS. Il n'y a pas encore de détection de double déclaration à cette étape. Ce n'est qu'à la passe de typage que l'on va être capable de déterminer si une fonction a effectivement été doublement déclarée. À cette étape, on va caractériser l'\texttt{infoFun} avec un booléen qui va nous indiquer si elle possède un corps ou non. Ceci va nous permettre, quand on détecte que l'identifiant existe déjà, de savoir si c'est à cause d'une déclaration de prototype préalable ou d'une réelle double déclaration. Ce n'est donc qu'à l'issue de cette passe qu'on va pouvoir, en parcourant de nouveau les \texttt{infoFun}, s'il manque le corps d'une fonction. C'est pour cela que cette étape doit se dérouler à la passe de placement mémoire.
+
+Au niveau de la grammaire, il a été décidé de séparer la partie déclarée avant le bloc \emph{main} et la partie déclarée après. Il aurait été en effet possible de considérer que le \emph{main} doit systématiquement être analysé en dernier et dès cette étape, concaténer la liste de fonction \emph{lf1} et \emph{lf2} en lieu et place du bloc initial dans la grammaire précédente qui ne permettait qu'une liste de fonction \emph{avant} le bloc \emph{main}. Ainsi les prototypes auraient uniquement servi pour les déclarations de fonctions. Néanmoins le choix permet un comportement assez naturel: lorsqu'on définit une fonction après le bloc \emph{main}, il est nécessaire d'indiquer son prototype avant ce même bloc. Ainsi le compilateur analyse le code dans l'ordre d'écriture. Ce n'est qu'à l'issue de la passe de typage que les deux listes de fonctions sont concaténées pour la suite : le placement de mémoire et la génération de code.
+
+\begin{minted}[frame=single,label=grammaire prog]{ocaml}
+prog :
+| lf1 = dfs ID li = bloc lf2 = dfs   {Programme (lf1,li,lf2)}
+\end{minted}
+
+\begin{minted}[frame=single,label=analyser de passeTdsRat]{ocaml}
+(* analyser : AstSyntax.ast -> AstTds.ast *)
+(* Paramètre : le programme à analyser *)
+(* Vérifie la bonne utilisation des identifiants et tranforme le 
+programme en un programme de type AstTds.ast *)
+(* Erreur si mauvaise utilisation des identifiants *)
+let analyser (AstSyntax.Programme(fonctions1, prog, fonctions2)) =
+let tds = creerTDSMere () in
+let nf1 = List.map (analyse_tds_fonction tds) fonctions1 in
+let nb = analyse_tds_bloc tds prog in
+let nf2 = List.map (analyse_tds_fonction tds) fonctions2 in
+Programme (nf1, nb, nf2)
+\end{minted}
+
+
+
+\section{Conclusion}
+
+
+\end{document}

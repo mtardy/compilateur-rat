@@ -66,13 +66,13 @@ let rec analyse_expression e =
       (* MAlloc réserve la place *)
       (* L'adresse est placé dans la pile *)
       ^"SUBR MAlloc\n"^
-      (* On place la liste de caractere et la taille dans la pile*)
+      (* On place la liste de caractère et la taille dans la pile*)
       "LOADL "^(string_of_int (List.length l))^"\n"^
       (* On charge chaque caractère dans la pile *)
       load_chaine l
       (* On récupère l'adresse renvoyée par MAlloc et on la place en haut de la pile *)
       ^"LOAD (1) -"^(string_of_int ((List.length l)+2))^"[ST]\n"
-      (* On place la chaine dans le tas *)
+      (* On place la chaîne dans le tas *)
       ^"STOREI ("^(string_of_int ((List.length l)+1))^")\n"
       (* La haut de la pile est égal à l'adresse de la string *)
   | SousChaine(e, e1, e2) ->

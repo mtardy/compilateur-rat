@@ -79,7 +79,7 @@ let%test_unit "testPointeursType12"=
   | TypeInattendu (Rat, Int) -> ()
 
 (* Test passe génération de code *)
-(*
+
 let%expect_test "testTamPointeurs1" =
   TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testTamPointeurs1.rat";
   [%expect{| 3 |}]
@@ -87,4 +87,3 @@ let%expect_test "testTamPointeurs1" =
 let%expect_test "testTamPointeurs2" =
   TestTam.runtam "../../fichiersRat/test-pointeurs/tam/testTamPointeurs2.rat";
   [%expect{| 99 |}]
-*)

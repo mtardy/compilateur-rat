@@ -1,9 +1,9 @@
 \babel@toc {french}{}
 \contentsline {section}{\numberline {1}Introduction}{1}{section.1}
-\contentsline {section}{\numberline {2}Types}{2}{section.2}
+\contentsline {section}{\numberline {2}Types}{1}{section.2}
 \contentsline {section}{\numberline {3}Extension du langage RAT}{2}{section.3}
 \contentsline {subsection}{\numberline {3.1}Les cha\IeC {\^\i }nes de caract\IeC {\`e}res}{2}{subsection.3.1}
-\contentsline {subsection}{\numberline {3.2}Les pointeurs}{2}{subsection.3.2}
-\contentsline {subsection}{\numberline {3.3}La surcharge de fonctions}{3}{subsection.3.3}
-\contentsline {subsection}{\numberline {3.4}Les prototypes}{4}{subsection.3.4}
-\contentsline {section}{\numberline {4}Conclusion}{5}{section.4}
+\contentsline {subsection}{\numberline {3.2}Les pointeurs}{3}{subsection.3.2}
+\contentsline {subsection}{\numberline {3.3}La surcharge de fonctions}{4}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Les prototypes}{5}{subsection.3.4}
+\contentsline {section}{\numberline {4}Conclusion}{6}{section.4}

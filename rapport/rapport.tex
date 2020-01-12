@@ -6,7 +6,7 @@
 \usepackage{lmodern}
 
 % Les marges
-\usepackage[a4paper,top=3cm,bottom=3cm]{geometry}
+\usepackage[a4paper]{geometry}
 
 % Pour les URLs
 \usepackage[hidelinks]{hyperref}
@@ -79,7 +79,7 @@
 \usepackage{minted}
 
 % Espace entre les paragraphes
-\setlength{\parskip}{0.5em}
+%\setlength{\parskip}{0.5em}
 
 
 \title{\vspace{-1cm}\includegraphics[width=7cm]{n7.png}\\ Projet de programmation fonctionnelle et \\de traduction des langages\\ Compilateur du langage RAT étendu}
@@ -92,19 +92,26 @@
 \tableofcontents
 
 \section{Introduction}
-Dans ce rapport nous allons voir comment ont été ajoutées les extensions du langage RAT au compilateur écrit en OCaml durant les séances de TPs. Seront abordés les choix de conception, leurs limites et avantages, et enfin les possibilités d'évolution plus ou moins complexe du compilateur.
+Dans ce rapport nous allons voir comment ont été ajoutées les extensions du langage RAT au compilateur écrit en OCaml durant les séances de TPs. Les extensions sont les chaînes de caractères, les pointeurs, la surcharge de fonctions et les prototypes. Seront abordés les choix de conception, leurs limites et avantages, et enfin les possibilités d'évolution plus ou moins complexe du compilateur.
 
 \section{Types}
+
+L'évolution de l'AST reflète les changements effectués au sein de la grammaire. Des expressions ont été ajoutées pour la gestion des chaînes de caractères et des pointeurs telles que \texttt{Chaine}, \texttt{SousChaine}, \texttt{Taille}, \texttt{New}, \texttt{Adresse}, \texttt{Null}, \texttt{Acces}. Ce dernier concerne un accès sur un affectable, qui est un type ajouté qui comprend \texttt{Ident} ou \texttt{Valeur}. Une nouvelle valeur a été ajoutée pour le type binaire : \texttt{Concat} pour les chaînes de caractères. Ensuite, dans les instructions, l'affectation a été modifiée en une structure prenant un affectable et une expression\footnote{Ce qui rend le traitement plus élégant lors des différentes passes, en effet lors d'une affectation, on analyse naturellement l'affectable puis l'expression à affecter.}. Pour l'ajout des prototypes, le type fonction a été modifiée en y ajoutant le \texttt{Prototype}. Enfin, pour refléter le changement fait dans la grammaire d'un programme discuté dans la partie \ref{partiePrototypes}, un programme est désormais un \texttt{Programme of fonction list * bloc * fonction list}.
+
+Les changements suivants dans les AST des passes suivantes sont identiques aux changements de l'AST issu de la passe d'analyse lexicale. Il a cependant été ajouté de nouvelles instructions d'affichage spécifiques aux chaînes de caractères dans l'AST issu de la passe de typage.
+
+On constate que les changements fait à l'AST correspondent pour la plupart aux changements fait sur la grammaire et qu'ils dépendent plus d'une vision logique que d'une solution unique. En effet, le découpage sur les affectables pourrait être discuté car le fait que son traitement soit régulièrement séparé selon l'usage montre qu'il ne rassemble pas forcément une même structure. Il est toujours possible de créer de nouveaux types ou d'en éliminer mais il faut trouver un équilibre logique entre les structures et les types.
+
 \section{Extension du langage RAT}
 \subsection{Les chaînes de caractères}
 
-L'intégration des chaînes de caractères ne présente pas de difficultés particulières à la passe de TDS. Lors de la passe de typage, il faut bien valider les jugements de typages indiqués ci-dessous et également résoudre une nouvelle opération binaire : la concaténation de deux chaînes de caractères. La passe de placement est inchangé. Cependant la passe de génération de code est complexe, nous avons choisi de garder la proposition du sujet concernant la structure des chaînes de caractères dans le tas: longueur de la chaîne suivi d'un tableau de caractères\footnote{On notera que cette structure justifie l'ajout du mot clé \texttt{length} dans le langage, car on peut récupérer la taille d'une string de manière très efficace.}. Il faut alors réaliser plusieurs opération lorsqu'on fait face à une expression de type chaîne de caractères: charger sa taille + 1 dans la pile pour allouer l'espace dans le tas puis charger chaque caractère et la taille dans la pile pour aller les stocker à l'adresse indiquée lors de l'allocation. Ainsi à la fin de l'opération, on obtient l'adresse pour retrouver la chaîne de caractères dans le tas en haut de pile.
+L'intégration des chaînes de caractères ne présente pas de difficulté particulière à la passe de TDS. Lors de la passe de typage, il faut bien valider les jugements de typages indiqués ci-dessous et également résoudre une nouvelle opération binaire : la concaténation de deux chaînes de caractères. La passe de placement est inchangée. Cependant la passe de génération de code est complexe, nous avons choisi de garder la proposition du sujet concernant la structure des chaînes de caractères dans le tas: longueur de la chaîne suivie d'un tableau de caractères\footnote{On notera que cette structure justifie l'ajout du mot clé \texttt{length} dans le langage, car on peut récupérer la taille d'une string de manière très efficace.}. Il faut alors réaliser plusieurs opérations lorsqu'on fait face à une expression de type chaîne de caractères: charger sa taille + 1 dans la pile pour allouer l'espace dans le tas puis charger chaque caractère et la taille dans la pile pour aller les stocker à l'adresse indiquée lors de l'allocation. Ainsi à la fin de l'opération, on obtient l'adresse pour retrouver la chaîne de caractères dans le tas en haut de pile.
 
-Pour l'expression sous-chaîne, on ne vérifie pas dans $E\{E_1,E_2\}$ que les entiers $E_1$ et $E_2$ ne dépassent pas la longueur de la chaîne - 1. Ainsi des erreurs au moment de l'exécution peuvent être due à des dépassements d'indices sur une chaîne de caractère.
+Pour l'expression sous-chaîne, on ne vérifie pas dans $E\{E_1,E_2\}$ que les entiers $E_1$ et $E_2$ ne dépassent pas la longueur de la chaîne - 1. Ainsi des erreurs au moment de l'exécution peuvent être dues à des dépassements d'indices sur une chaîne de caractère.
 
 \subsubsection*{Jugements de typage}
 
-Voici ci-dessous les jugements de typages; pour une expression de type chaîne voir le jugement \ref{jugChaine}, pour une expression de concaténation de chaîne de caractères voir le jugement \ref{jugConcat}, pour une expression de sous-chaîne voir le jugement \ref{jugSousChaine} et pour une expression de taille d'une chaîne de caracatères voir le jugement \ref{jugTaille}.
+Voici ci-dessous les jugements de typages; pour une expression de type chaîne voir le jugement \ref{jugChaine}, pour une expression de concaténation de chaîne de caractères voir le jugement \ref{jugConcat}, pour une expression de sous-chaîne voir le jugement \ref{jugSousChaine} et pour une expression de taille d'une chaîne de caractères voir le jugement \ref{jugTaille}.
 
 \begin{equation}
 	\label{jugChaine}
@@ -128,11 +135,11 @@ Voici ci-dessous les jugements de typages; pour une expression de type chaîne v
 
 \subsection{Les pointeurs}
 
-L'intégration des pointeurs ne sera pas détaillée ici car elle a été traitée en TD. Il a été fait le choix de créer les affectables. Leur traitement doit être fait séparément dans le cas d'une lecture ou d'une écriture pour la passe de TDS. Néanmoins leur traitement a pu être factorisé dans la passe de typage de même que pour la passe de génération du code des affectable. Bien que réalisé dans une unique fonction, la génération est différente dans le cas d'une lecture ou d'une écriture, voir les commentaires associées pour plus d'information sur cette fonction.
+L'intégration des pointeurs ne sera pas détaillée ici car elle a été traitée en TD. Il a été décidé de créer les affectables. Leur traitement doit être fait séparément dans le cas d'une lecture ou d'une écriture pour la passe de TDS. Néanmoins leur traitement a pu être factorisé dans la passe de typage de même que pour la passe de génération du code des affectables. Bien que réalisée dans une unique fonction, la génération est différente dans le cas d'une lecture ou d'une écriture, voir les commentaires associés pour plus d'information sur cette fonction.
 
 Le type \texttt{Pointeur of typ} a été ajouté et ainsi pour permettre la déclaration d'un pointeur sur \texttt{null}, le type \texttt{undefined} est compatible avec n'importe quel autre type.
 
-L'affichage des pointeurs, c'est-à-dire l'adresse vers lequel un pointeur pointe, a été fait très simplement dans notre projet en utilisant \texttt{AffichageInt()}. On pourrait l'améliorer en dédiant une fonction qui ferait la même chose en concaténant un caractère '\texttt{@}' au début de l'entier afin de bien discerner qu'il s'agit d'une adresse.
+L'affichage des pointeurs, c'est-à-dire l'adresse vers laquelle un pointeur pointe, a été fait très simplement dans notre projet en utilisant \texttt{AffichageInt()}. On pourrait l'améliorer en dédiant une fonction qui ferait la même chose en concaténant un caractère '\texttt{@}' au début de l'entier afin de bien discerner qu'il s'agit d'une adresse.
 
 \subsubsection*{Jugements de typage}
 
@@ -173,12 +180,13 @@ int i = g(f(), f()); // Comment choisir le type de retour de f
 \end{minted}Nous acceptons néanmoins la surcharge de type de retour du moment que les types des paramètres sont différents puisqu'ils permettent alors de caractériser une fonction particulière et donc un type de retour.Lors de la passe de typage, lorsque nous rencontrons une fonction, nous créons une \texttt{infoFun}, nous l'ajoutons ensuite à l'\texttt{infoMultiFun} pour pouvoir associer les différents appels à l'\texttt{infoFun} correspondante. Finalement, lors d'un appelle de fonction, nous parcourons l'\texttt{infoMultiFun} à la recherche d'une liste de types correspondant aux arguments pour lui associer l'\texttt{infoFun} couplé à la liste d'arguments. Si la liste d'arguments n'est pas trouvée, nous renvoyons une erreur type de paramètres inattendus.Pour créer une infoFun, il nous faut un nom de fonction qui permet d'y faire référence dans le code final, nous générons donc pour chaque fonction un nom de la forme \texttt{nom\#numéro}, où le numéro est incrémenté à chaque fonction rencontrée. Ainsi les noms internes de nos fonctions ne correspondent plus aux noms initiaux et sont difficilement prévisibles. C'est la raison pour laquelle il est compliqué de faire des tests sur le placement mémoire pour les fonctions dans notre situation. Cependant, lors de la levée d'erreur, les chaînes de caractères représentant les noms des fonctions sont découpées au niveau du caractère \texttt{\#} pour que les erreurs soient compréhensibles pour l'utilisateur. Il faudrait alors interdire l'utilisation du caractère \texttt{\#} dans les noms de fonctions du langage RAT.
 
 \subsection{Les prototypes}
+\label{partiePrototypes}
 
 Les prototypes permettent de déclarer une fonction \emph{en avant} sans déclarer son corps. Cela est particulièrement utile dans le cadre d'une récursion mutuelle entre deux fonctions, impossible à écrire sinon.
 
-Leur intégration avec la surcharge (qui détermine désormais les doubles déclarations à la passe de typage) oblige à décaler certaines étapes. En effet, à la passe de TDS, l'analyse d'un prototype ajoute l'identifiant de la fonction à la TDS. Il n'y a pas encore de détection de double déclaration à cette étape. Ce n'est qu'à la passe de typage que l'on va être capable de déterminer si une fonction a effectivement été doublement déclarée. À cette étape, on va caractériser l'\texttt{infoFun} avec un booléen qui va nous indiquer si elle possède un corps ou non. Ceci va nous permettre, quand on détecte que l'identifiant existe déjà, de savoir si c'est à cause d'une déclaration de prototype préalable ou d'une réelle double déclaration. Ce n'est donc qu'à l'issue de cette passe qu'on va pouvoir, en parcourant de nouveau les \texttt{infoFun}, s'il manque le corps d'une fonction. C'est pour cela que cette étape doit se dérouler à la passe de placement mémoire.
+Leur intégration avec la surcharge (qui résout désormais les doubles déclarations à la passe de typage) oblige à décaler certaines étapes. En effet, à la passe de TDS, l'analyse d'un prototype ajoute l'identifiant de la fonction à la TDS. Il n'y a pas encore de détection de double déclaration à cette étape. Ce n'est qu'à la passe de typage que l'on va être capable de déterminer si une fonction a effectivement été doublement déclarée. À cette étape, on va caractériser l'\texttt{infoFun} avec un booléen qui va nous indiquer si elle possède un corps ou non. Ceci va nous permettre, quand on détecte que l'identifiant existe déjà, de savoir si c'est à cause d'une déclaration de prototype préalable ou d'une réelle double déclaration. Ce n'est donc qu'à l'issue de cette passe qu'on va pouvoir, en parcourant de nouveau les \texttt{infoFun}, s'il manque le corps d'une fonction. C'est pour cela que cette étape doit se dérouler à la passe de placement mémoire.
 
-Au niveau de la grammaire, il a été décidé de séparer la partie déclarée avant le bloc \emph{main} et la partie déclarée après. Il aurait été en effet possible de considérer que le \emph{main} doit systématiquement être analysé en dernier et dès cette étape, concaténer la liste de fonction \emph{lf1} et \emph{lf2} en lieu et place du bloc initial dans la grammaire précédente qui ne permettait qu'une liste de fonction \emph{avant} le bloc \emph{main}. Ainsi les prototypes auraient uniquement servi pour les déclarations de fonctions. Néanmoins le choix permet un comportement assez naturel: lorsqu'on définit une fonction après le bloc \emph{main}, il est nécessaire d'indiquer son prototype avant ce même bloc. Ainsi le compilateur analyse le code dans l'ordre d'écriture. Ce n'est qu'à l'issue de la passe de typage que les deux listes de fonctions sont concaténées pour la suite : le placement de mémoire et la génération de code.
+Au niveau de la grammaire, il a été décidé de séparer la partie déclarée avant le bloc \emph{main} et la partie déclarée après. Il aurait été en effet possible de considérer que le \emph{main} doit systématiquement être analysé en dernier et dès cette étape, concaténer la liste de fonction \emph{lf1} et \emph{lf2} en lieu et place du bloc initial dans la grammaire précédente qui ne permettait qu'une liste de fonction \emph{avant} le bloc \emph{main}. Ainsi les prototypes auraient uniquement servi pour les déclarations de fonctions. Néanmoins, le choix permet un comportement assez naturel: lorsqu'on définit une fonction après le bloc \emph{main}, il est nécessaire d'indiquer son prototype avant ce même bloc. Ainsi le compilateur analyse le code dans l'ordre d'écriture. Ce n'est qu'à l'issue de la passe de typage que les deux listes de fonctions sont concaténées pour la suite : le placement de mémoire et la génération de code.
 
 \begin{minted}[frame=single,label=grammaire prog]{ocaml}
 prog :
@@ -199,9 +207,31 @@ let nf2 = List.map (analyse_tds_fonction tds) fonctions2 in
 Programme (nf1, nb, nf2)
 \end{minted}
 
-
-
 \section{Conclusion}
+
+Pour conclure, les ajouts faits au langage ont présenté des difficultés à des niveaux différents. En effet, l'ajout de la surcharge a nécessité de revoir en profondeur ce qui était qu'une \texttt{info} associée à une fonction pour pouvoir ajouter les fonctions puis résoudre la surcharge. L'ajout des prototypes a nécessité de bien comprendre à partir de quelle passe nous pourrions savoir qu'il allait manquer le corps d'une fonction surchargée uniquement déclarée en prototype. L'ajout des chaînes de caractères (que nous avons traité en premier) nous a permis de bien comprendre les mécanismes d'interactions entre la pile et le tas. Enfin, l'ajout des pointeurs a été surtout délicat au moment de la gestion des affectables dans les différentes passes et surtout à la génération de code. En effet, le traitement diffère selon le type de l'identifiant à traiter, c'est-à-dire s'il s'agit d'un identifiant d'une variable ou d'un identifiant d'un pointeur.
+
+Dans l'ensemble, il est intéressant de voir qu'avec un compilateur plutôt simple on peut parvenir à traiter un langage certes avec une écriture parfois lourde, mais des structures complexes : les possibilités offertes par la surcharge et les pointeurs paraissent en premier abord complexe à intégrer. Enfin, la réalisation d'un tel compilateur permet d'acquérir une compréhension profonde de ce que sont les éléments d'un langage et d'expérimenter une manière de les traiter simplement.
+
+Pour terminer, les améliorations que nous aurions pu apporter au compilateur sont: la surcharge sur les types de retours des fonctions, une passe d'optimisation pour éliminer le code mort et notamment les fonctions importées inutilement, 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \end{document}

@@ -209,29 +209,10 @@ Programme (nf1, nb, nf2)
 
 \section{Conclusion}
 
-Pour conclure, les ajouts faits au langage ont présenté des difficultés à des niveaux différents. En effet, l'ajout de la surcharge a nécessité de revoir en profondeur ce qui était qu'une \texttt{info} associée à une fonction pour pouvoir ajouter les fonctions puis résoudre la surcharge. L'ajout des prototypes a nécessité de bien comprendre à partir de quelle passe nous pourrions savoir qu'il allait manquer le corps d'une fonction surchargée uniquement déclarée en prototype. L'ajout des chaînes de caractères (que nous avons traité en premier) nous a permis de bien comprendre les mécanismes d'interactions entre la pile et le tas. Enfin, l'ajout des pointeurs a été surtout délicat au moment de la gestion des affectables dans les différentes passes et surtout à la génération de code. En effet, le traitement diffère selon le type de l'identifiant à traiter, c'est-à-dire s'il s'agit d'un identifiant d'une variable ou d'un identifiant d'un pointeur.
+Pour conclure, les ajouts faits au langage ont présenté des difficultés à des niveaux différents. En effet, l'ajout de la surcharge a nécessité de revoir en profondeur ce qu'était qu'une \texttt{info} associée à une fonction pour pouvoir ajouter les fonctions puis résoudre la surcharge. L'ajout des prototypes a nécessité de bien comprendre à partir de quelle passe nous pourrions savoir qu'il allait manquer le corps d'une fonction surchargée uniquement déclarée en prototype. L'ajout des chaînes de caractères (que nous avons traité en premier) nous a permis de bien comprendre les mécanismes d'interactions entre la pile et le tas. Enfin, l'ajout des pointeurs a été surtout délicat au moment de la gestion des affectables dans les différentes passes et surtout à la génération de code. En effet, le traitement diffère selon le type de l'identifiant à traiter, c'est-à-dire s'il s'agit d'un identifiant d'une variable ou d'un identifiant d'un pointeur.
+
+Les améliorations que nous aurions pu apporter au compilateur sont: la surcharge sur les types de retours des fonctions, une passe d'optimisation pour éliminer le code mort avec notamment les fonctions importées inutilement, ajouter ensuite la définition de type.
 
 Dans l'ensemble, il est intéressant de voir qu'avec un compilateur plutôt simple on peut parvenir à traiter un langage certes avec une écriture parfois lourde, mais des structures complexes : les possibilités offertes par la surcharge et les pointeurs paraissent en premier abord complexe à intégrer. Enfin, la réalisation d'un tel compilateur permet d'acquérir une compréhension profonde de ce que sont les éléments d'un langage et d'expérimenter une manière de les traiter simplement.
-
-Pour terminer, les améliorations que nous aurions pu apporter au compilateur sont: la surcharge sur les types de retours des fonctions, une passe d'optimisation pour éliminer le code mort et notamment les fonctions importées inutilement, 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 \end{document}

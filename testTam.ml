@@ -1,6 +1,7 @@
 open Compilateur
 
 (* Changer le chemin d'accès du jar. *)
+(* Ce .jar a été compilé en utilisant Java 1.8.0 *)
 let runtamcmde = "java -jar ../../runtam.jar"
 (* let runtamcmde = "java -jar /mnt/n7fs/.../tools/runtam/runtam.jar" *)
 

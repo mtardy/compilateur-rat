@@ -1,4 +1,0 @@
-\begin{Verbatim}[commandchars=\\\{\}]
-\PYG{n}{prog} \PYG{o}{:}
-\PYG{o}{|} \PYG{n}{lf1} \PYG{o}{=} \PYG{n}{dfs} \PYG{n+nc}{ID} \PYG{n}{li} \PYG{o}{=} \PYG{n}{bloc} \PYG{n}{lf2} \PYG{o}{=} \PYG{n}{dfs}   \PYG{o}{\PYGZob{}}\PYG{n+nc}{Programme} \PYG{o}{(}\PYG{n}{lf1}\PYG{o}{,}\PYG{n}{li}\PYG{o}{,}\PYG{n}{lf2}\PYG{o}{)\PYGZcb{}}
-\end{Verbatim}
